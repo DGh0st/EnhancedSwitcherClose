@@ -82,6 +82,11 @@ BOOL _shouldPerformAction = NO;
 -(void)addLabelWithTitle:(NSString *)arg1 withY:(CGFloat)arg2 withColor:(UIColor *)arg3 {
 	CGRect pageViewFrame = [self _frameForPageView];
 
+	if (createdView == nil) {
+		createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, 0, pageViewFrame.size.width, pageViewFrame.size.height)];
+		createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+	}
+
 	UIView *leftSeparator = [[UIView alloc] initWithFrame:CGRectMake(8, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	leftSeparator.backgroundColor = arg3;
 	[createdView addSubview:leftSeparator];
@@ -95,15 +100,28 @@ BOOL _shouldPerformAction = NO;
 	UIView *rightSeparator = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.size.width * 2  / 3, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	rightSeparator.backgroundColor = arg3;
 	[createdView addSubview:rightSeparator];
+
+	[label sizeToFit];
+
+	CGRect labelFrame = label.frame;
+	labelFrame.size.width += 16;
+	labelFrame.origin.x = pageViewFrame.size.width / 2 - labelFrame.size.width / 2;
+	label.frame = labelFrame;
+
+	CGRect leftSeparatorFrame = leftSeparator.frame;
+	leftSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
+	leftSeparator.frame = leftSeparatorFrame;
+
+	CGRect rightSeparatorFrame = rightSeparator.frame;
+	rightSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
+	rightSeparatorFrame.origin.x = pageViewFrame.size.width / 2 + labelFrame.size.width / 2;
+	rightSeparator.frame = rightSeparatorFrame;
 }
 
 %new
 -(void)createUpwardSpringBoardLabels {
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
 	CGRect pageViewFrame = [self _frameForPageView];
-
-	createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, pageViewFrame.origin.y - pageViewFrame.size.height / 2, pageViewFrame.size.width, pageViewFrame.size.height)];
-	createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
 	
 	[self addLabelWithTitle:@"Respring" withY:(pageViewFrame.size.height * (1 - kThirdActionOffset)) withColor:[UIColor redColor]];
 	[self addLabelWithTitle:@"Kill-All" withY:(pageViewFrame.size.height * (1 - kSecondActionOffset)) withColor:[UIColor orangeColor]];
@@ -116,9 +134,6 @@ BOOL _shouldPerformAction = NO;
 -(void)createUpwardLabels {
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
 	CGRect pageViewFrame = [self _frameForPageView];
-
-	createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, pageViewFrame.origin.y - pageViewFrame.size.height / 2, pageViewFrame.size.width, pageViewFrame.size.height)];
-	createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
 	
 	[self addLabelWithTitle:@"Close" withY:(pageViewFrame.size.height * (1 - kSecondActionOffset)) withColor:[UIColor redColor]];
 	[self addLabelWithTitle:@"Relaunch" withY:(pageViewFrame.size.height * (1 - kFirstActionOffset)) withColor:[UIColor orangeColor]];
@@ -130,9 +145,6 @@ BOOL _shouldPerformAction = NO;
 -(void)createDownwardLabels {
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
 	CGRect pageViewFrame = [self _frameForPageView];
-
-	createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, pageViewFrame.origin.y - pageViewFrame.size.height / 2, pageViewFrame.size.width, pageViewFrame.size.height)];
-	createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
 	
 	[self addLabelWithTitle:@"Dismiss Switcher" withY:(pageViewFrame.size.height * kSecondActionOffset) withColor:[UIColor orangeColor]];
 	[self addLabelWithTitle:@"Launch" withY:(pageViewFrame.size.height * kFirstActionOffset) withColor:[UIColor greenColor]];
@@ -142,7 +154,7 @@ BOOL _shouldPerformAction = NO;
 
 %new
 -(void)removeLabels {
-	if (createdView) {
+	if (createdView != nil) {
 		NSArray *subViews = [createdView subviews];
 		for (UIView *view in subViews) {
 			[view removeFromSuperview];
@@ -156,6 +168,13 @@ BOOL _shouldPerformAction = NO;
 
 %new
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3 {
+	if (createdView != nil) {
+		CGFloat alpha = fabs(arg1) * 2.5;
+		if (alpha > 0.5) {
+			alpha = 0.5;
+		}
+		createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:alpha];
+	}
 	if (arg2 == currentDirection) {
 		return;
 	}
@@ -178,6 +197,7 @@ BOOL _shouldPerformAction = NO;
 
 -(void)scrollViewWillEndDragging:(id)arg1 withVelocity:(CGPoint)arg2 targetContentOffset:(id)arg3 {
 	_shouldPerformAction = YES;
+	%orig(arg1, arg2, arg3);
 }
 %end
 
@@ -186,7 +206,7 @@ BOOL _shouldPerformAction = NO;
 	SBDisplayItem *selected = [arg2 displayItem];
 	BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
 
-	if (arg1 > 0.0f) {
+	if (arg1 > 0.0) {
 		[arg2 scrollViewProgressUpdated:arg1 withDirection:kUp withIsSpringBoard:isSpringBoard];
 		if ([arg2 shouldPerformAction]) {
 			if (arg1 > kThirdActionOffset) { // respring
@@ -224,8 +244,9 @@ BOOL _shouldPerformAction = NO;
 					[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:selected.displayIdentifier suspended:NO];
 				}
 			}
+			[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
 		}
-	} else if (arg1 < 0.0f) {
+	} else if (arg1 < 0.0) {
 		[arg2 scrollViewProgressUpdated:arg1 withDirection:kDown withIsSpringBoard:isSpringBoard];
 		if ([arg2 shouldPerformAction]) {
 			if (arg1 < -kSecondActionOffset) { // dismiss switcher
@@ -237,6 +258,7 @@ BOOL _shouldPerformAction = NO;
 				SBDeckSwitcherPageView *returnPage = MSHookIvar<SBDeckSwitcherPageView *>(arg2, "_pageView");
 				[arg2 _handlePageViewTap:returnPage];
 			}
+			[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
 		}
 	} else {
 		[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
