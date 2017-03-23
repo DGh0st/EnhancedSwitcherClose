@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Now Playing Settings</string>
+			<key>footerText</key>
+			<string>Stop now playing applications from being killed on close/relaunch swipe.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isNowPlayingEnabled</string>
+			<key>label</key>
+			<string>Continue Now Playing</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Kill-All Settings</string>
+			<key>footerText</key>
+			<string>Whitelist applications to not be killed by kill-All.
+Auto Close Switcher on Kill-All
+Prevent Kill-All from killing now playing application.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isWhitelistEnabled</string>
+			<key>label</key>
+			<string>Enable Whitelist</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>bundle</key>
+			<string>AppList</string>
+			<key>isController</key>
+			<true/>
+			<key>label</key>
+			<string>Whitelist</string>
+			<key>ALSettingsPath</key>
+			<string>/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist</string>
+			<key>ALSettingsKeyPrefix</key>
+			<string>PerAppKill-</string>
+			<key>ALChangeNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isAutoDismissOnKillEnabled</string>
+			<key>label</key>
+			<string>Auto Close On Kill-All</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isNowPlayingOnKillEnabled</string>
+			<key>label</key>
+			<string>Continue Playing on Kill-All</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Auto Dismiss Settings</string>
+			<key>footerText</key>
+			<string>Close out of switcher when last application is closed via swipe.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isAutoCloseSwitcherEnabled</string>
+			<key>label</key>
+			<string>Auto Close On Last</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Quick Launch Settings</string>
+			<key>footerText</key>
+			<string>Select applications to launch on "Quick Launch" action</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>bundle</key>
+			<string>AppList</string>
+			<key>isController</key>
+			<true/>
+			<key>label</key>
+			<string>Quick Launch</string>
+			<key>ALSettingsPath</key>
+			<string>/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist</string>
+			<key>ALSettingsKeyPrefix</key>
+			<string>QuickLaunch-</string>
+			<key>ALChangeNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerAlignment</key>
+			<integer>1</integer>
+			<key>footerText</key>
+			<string>EnhancedSwitcherClose © 2017 DGh0st</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>Customize</string>
+</dict>
+</plist>

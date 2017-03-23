@@ -1,7 +1,7 @@
 export ARCHS = armv7 arm64
-export TARGET = iphone:clang:latest:latest
+export TARGET = iphone:clang:8.1:latest
 
-PACKAGE_VERSION = 0.0.2
+PACKAGE_VERSION = 0.0.3
 
 include $(THEOS)/makefiles/common.mk
 
@@ -14,3 +14,5 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
 	install.exec "killall -9 SpringBoard"
+SUBPROJECTS += enhancedswitcherclose
+include $(THEOS_MAKE_PATH)/aggregate.mk

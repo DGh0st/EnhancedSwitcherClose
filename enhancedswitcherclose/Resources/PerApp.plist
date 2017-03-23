@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isAppEnabled</string>
+			<key>label</key>
+			<string>Enable</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Swipe Down Actions</string>
+			<key>footerText</key>
+			<string>set the actions for swipe down</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppFirstActionDown</string>
+			<key>label</key>
+			<string>First Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>4</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppSecondActionDown</string>
+			<key>label</key>
+			<string>Second Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>5</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppThirdActionDown</string>
+			<key>label</key>
+			<string>Third Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>0</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Swipe Up Actions</string>
+			<key>footerText</key>
+			<string>set the actions for swipe up</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppFirstActionUp</string>
+			<key>label</key>
+			<string>First Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>7</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppSecondActionUp</string>
+			<key>label</key>
+			<string>Second Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>6</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>AppThirdActionUp</string>
+			<key>label</key>
+			<string>Third Action</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+				<array>
+					<string>None</string>
+					<string>Respring</string>
+					<string>Kill-All Applications</string>
+					<string>Relaunch-All Applications</string>
+					<string>Quick Launch Applications</string>
+					<string>Launch</string>
+					<string>Dismiss Switcher</string>
+					<string>Close</string>
+					<string>Relaunch</string>
+				</array>
+			<key>validValues</key>
+				<array>
+					<integer>0</integer><!--None-->
+					<integer>1</integer><!--Respring-->
+					<integer>2</integer><!--Kill-All-->
+					<integer>3</integer><!--Relaunch-All-->
+					<integer>8</integer><!--Quick Launch-->
+					<integer>4</integer><!--Launch-->
+					<integer>5</integer><!--Dismiss Switcher-->
+					<integer>6</integer><!--Close-->
+					<integer>7</integer><!--Relaunch-->
+				</array>
+			<key>default</key>
+			<integer>0</integer>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerAlignment</key>
+			<integer>1</integer>
+			<key>footerText</key>
+			<string>EnhancedSwitcherClose © 2017 DGh0st</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string></string>
+</dict>
+</plist>
