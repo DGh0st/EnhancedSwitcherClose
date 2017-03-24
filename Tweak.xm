@@ -27,6 +27,7 @@
 static BOOL isTweakEnabled = YES;
 static BOOL isHomeEnabled = YES;
 static BOOL isNowPlayingEnabled = NO;
+static BOOL isAlertNowPlayingEnabled = NO;
 static BOOL isWhitelistEnabled = NO;
 static BOOL isAutoDismissOnKillEnabled = YES;
 static BOOL isNowPlayingOnKillEnabled = NO;
@@ -146,6 +147,7 @@ static void preferencesChanged() {
 	isTweakEnabled = boolValueForKey(@"isEnabled", YES);
 	isHomeEnabled = boolValueForKey(@"isHomeEnabled", YES);
 	isNowPlayingEnabled = boolValueForKey(@"isNowPlayingEnabled", NO);
+	isAlertNowPlayingEnabled = boolValueForKey(@"isAlertNowPlayingEnabled", NO);
 	isWhitelistEnabled = boolValueForKey(@"isWhitelistEnabled", NO);
 	isAutoDismissOnKillEnabled = boolValueForKey(@"isAutoDismissOnKillEnabled", YES);
 	isNowPlayingOnKillEnabled = boolValueForKey(@"isNowPlayingOnKillEnabled", NO);
@@ -156,7 +158,7 @@ static void preferencesChanged() {
 @property (nonatomic,readonly) NSString* displayIdentifier;
 @end
 
-@interface SBDeckSwitcherViewController
+@interface SBDeckSwitcherViewController : UIViewController
 @property(retain, nonatomic) NSArray *displayItems;
 -(void)killDisplayItemOfContainer:(id)arg1 withVelocity:(CGFloat)arg2;
 -(id)_itemContainerForDisplayItem:(id)arg1;
@@ -413,6 +415,15 @@ Action _thirdAction = kActionNone;
 %end
 
 %hook SBDeckSwitcherViewController
+UIAlertController *alert = nil;
+
+-(void)viewWillDisappear:(BOOL)arg1 {
+	if (alert) {
+		[alert dismissViewControllerAnimated:YES completion:nil];
+		alert = nil;
+	}
+}
+
 %new
 -(void)respring {
 	[[%c(FBSystemService) sharedInstance] exitAndRelaunch:YES];
@@ -429,8 +440,40 @@ Action _thirdAction = kActionNone;
 %new
 -(void)killApp:(SBDeckSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item {
 	NSString *nowPlayingBundleIdentifier = [[[%c(SBMediaController) sharedInstance] nowPlayingApplication] bundleIdentifier];
-	if (isNowPlayingEnabled && [item.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
-		return;
+	if ([item.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
+		if (isAlertNowPlayingEnabled) {
+			// should probably avoid UIAlertControllers in SpringBoard but oh well.
+			if (alert) {
+				[alert dismissViewControllerAnimated:YES completion:nil];
+				alert = nil;
+			}
+
+			NSString *appName = (MSHookIvar<UILabel *>(container, "_iconTitle")).text;
+			NSString *displayMessage = [NSString stringWithFormat:@"%@ is currently now playing. Would you like to continue?", appName];
+			alert = [UIAlertController alertControllerWithTitle:@"EnhancedSwitcherClose" message:displayMessage preferredStyle:UIAlertControllerStyleAlert];
+
+
+			UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+				[self killDisplayItemOfContainer:container withVelocity:1.0];
+				NSArray *items = [self displayItems];
+				if ([items count] == 1 && isAutoCloseSwitcherEnabled) {
+					[self dismissSwitcher];
+				}
+				alert = nil;
+			}];
+			UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+				alert = nil;
+			}];
+
+			[alert addAction:yesAction];
+			[alert addAction:cancelAction];
+
+			[self presentViewController:alert animated:YES completion:nil];
+
+			return;
+		} else if (isNowPlayingEnabled) {
+			return;
+		}
 	}
 	[self killDisplayItemOfContainer:container withVelocity:1.0];
 	NSArray *items = [self displayItems];

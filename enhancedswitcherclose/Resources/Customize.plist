@@ -10,7 +10,8 @@
 			<key>label</key>
 			<string>Now Playing Settings</string>
 			<key>footerText</key>
-			<string>Stop now playing applications from being killed on close/relaunch swipe.</string>
+			<string>Stop now playing applications from being killed on close/relaunch swipe.
+Display an alert when trying to kill now playing application.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -28,12 +29,26 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isAlertNowPlayingEnabled</string>
+			<key>label</key>
+			<string>Alert Now Playing</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Kill-All Settings</string>
 			<key>footerText</key>
 			<string>Whitelist applications to not be killed by kill-All.
-Auto Close Switcher on Kill-All
+Auto Close Switcher on Kill-All.
 Prevent Kill-All from killing now playing application.</string>
 		</dict>
 		<dict>
@@ -122,7 +137,7 @@ Prevent Kill-All from killing now playing application.</string>
 			<key>label</key>
 			<string>Quick Launch Settings</string>
 			<key>footerText</key>
-			<string>Select applications to launch on "Quick Launch" action</string>
+			<string>Select applications to launch on "Quick Launch" action.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
