@@ -53,6 +53,18 @@
 
 @end
 
+@implementation ESCDefaultAppsListController
+
+- (NSArray *)specifiers {
+	if (!_specifiers) {
+		_specifiers = [[self loadSpecifiersFromPlistName:@"DefaultApp" target:self] retain];
+	}
+
+	return _specifiers;
+}
+
+@end
+
 @implementation ESCAppsListController
 
 - (id)init {
@@ -107,6 +119,10 @@
 	UITableViewCell *cell = (UITableViewCell *)[_tableView cellForRowAtIndexPath:indexPath];
 	NSString *appName = cell.textLabel.text;
 	NSString *appIdentifier = [_dataSource displayIdentifierForIndexPath:indexPath];
+	if ([appName isEqualToString:@"Override All Applications"]) {
+		appName = @"Override All";
+		appIdentifier = @"com.dgh0st.override";
+	}
 
 	ESCPerAppController *controller = [[ESCPerAppController alloc] initWithAppName:appName displayIdentifier:appIdentifier];
 	controller.rootController = self.rootController;

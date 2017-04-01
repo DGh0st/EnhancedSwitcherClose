@@ -22,19 +22,8 @@
 #define identifier @"com.dgh0st.enhancedswitcherclose"
 #define kPerAppKill @"PerAppKill-"
 #define kPerApp @"isAppEnabled-"
+#define kOverridePerApp @"isOverrideEnabled-"
 #define kQuickLaunchApps @"QuickLaunch-"
-
-static BOOL isTweakEnabled = YES;
-static BOOL isHomeEnabled = YES;
-static BOOL isNowPlayingEnabled = NO;
-static BOOL isAlertNowPlayingEnabled = NO;
-static BOOL isWhitelistEnabled = NO;
-static BOOL isAutoDismissOnKillEnabled = YES;
-static BOOL isNowPlayingOnKillEnabled = NO;
-static BOOL isAutoCloseSwitcherEnabled = NO;
-
-NSDictionary *prefs = nil;
-BOOL isClosingAll = NO;
 
 typedef enum {
 	kUp = 0,
@@ -78,6 +67,25 @@ static UIColor *displayColors[9] = {
 	[UIColor greenColor]
 };
 
+static BOOL isTweakEnabled = YES;
+static BOOL isHomeEnabled = YES;
+static BOOL isNowPlayingEnabled = NO;
+static BOOL isAlertNowPlayingEnabled = NO;
+static BOOL isWhitelistEnabled = NO;
+static BOOL isAutoDismissOnKillEnabled = YES;
+static BOOL isNowPlayingOnKillEnabled = NO;
+static BOOL isAutoCloseSwitcherEnabled = NO;
+static BOOL isDefaultAppEnabled = YES;
+static Action defaultAppFirstActionDown = kLaunch;
+static Action defaultAppSecondActionDown = kDismissSwitcher;
+static Action defaultAppThirdActionDown = kActionNone;
+static Action defaultAppFirstActionUp = kRelaunch;
+static Action defaultAppSecondActionUp = kClose;
+static Action defaultAppThirdActionUp = kActionNone;
+
+NSDictionary *prefs = nil;
+BOOL isClosingAll = NO;
+
 static void reloadPrefs() {
 	if ([NSHomeDirectory() isEqualToString:@"/var/mobile"]) {
 		CFArrayRef keyList = CFPreferencesCopyKeyList((CFStringRef)identifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
@@ -103,12 +111,16 @@ static BOOL boolValuePerApp(NSString *appId, NSString *prefix, BOOL defaultValue
 			if ([key hasPrefix:prefix]) {
 				NSString *tempId = [key substringFromIndex:[prefix length]];
 				if ([tempId isEqualToString:appId]) {
-					return [prefs objectForKey:key] ? [[prefs objectForKey:key] boolValue] : defaultValue;
+					return boolValueForKey(key, defaultValue);
 				}
 			}
 		}
 	}
 	return defaultValue;
+}
+
+static NSInteger intValueForKey(NSString *key, NSInteger defaultValue) {
+	return (prefs && [prefs objectForKey:key]) ? [[prefs objectForKey:key] intValue] : defaultValue;
 }
 
 static NSInteger intValuePerApp(NSString *appId, NSString *prefix, NSInteger defaultValue) { // get int value of preference of specific application (AppList)
@@ -117,7 +129,7 @@ static NSInteger intValuePerApp(NSString *appId, NSString *prefix, NSInteger def
 			if ([key hasPrefix:prefix]) {
 				NSString *tempId = [key substringFromIndex:[prefix length]];
 				if ([tempId isEqualToString:appId]) {
-					return [prefs objectForKey:key] ? [[prefs objectForKey:key] intValue] : defaultValue;
+					return intValueForKey(key, defaultValue);
 				}
 			}
 		}
@@ -152,6 +164,13 @@ static void preferencesChanged() {
 	isAutoDismissOnKillEnabled = boolValueForKey(@"isAutoDismissOnKillEnabled", YES);
 	isNowPlayingOnKillEnabled = boolValueForKey(@"isNowPlayingOnKillEnabled", NO);
 	isAutoCloseSwitcherEnabled = boolValueForKey(@"isAutoCloseSwitcherEnabled", NO);
+	isDefaultAppEnabled = boolValueForKey(@"isAppEnabled", YES);
+	defaultAppFirstActionDown = (Action)intValueForKey(@"AppFirstActionDown", kLaunch);
+	defaultAppSecondActionDown = (Action)intValueForKey(@"AppSecondActionDown", kDismissSwitcher);
+	defaultAppThirdActionDown = (Action)intValueForKey(@"AppThirdActionDown", kActionNone);
+	defaultAppFirstActionUp = (Action)intValueForKey(@"AppFirstActionUp", kRelaunch);
+	defaultAppSecondActionUp = (Action)intValueForKey(@"AppSecondActionUp", kClose);
+	defaultAppThirdActionUp = (Action)intValueForKey(@"AppThirdActionUp", kActionNone);
 }
 
 @interface SBDisplayItem : NSObject
@@ -244,6 +263,8 @@ Action _thirdAction = kActionNone;
 
 %new
 -(void)updateActionswithIsSpringBoard:(BOOL)isSpringBoard {
+	BOOL isOverrideEnabled = boolValuePerApp([self displayItem].displayIdentifier, kOverridePerApp, NO);
+
 	NSString *prefix = @"";
 	NSString *itemIdentifier = @"";
 	if (isSpringBoard) {
@@ -265,19 +286,41 @@ Action _thirdAction = kActionNone;
 			defaultSecondAction = kKillAll;
 			defaultThirdAction = kRespring;
 		} else {
-			defaultFirstAction = kRelaunch;
-			defaultSecondAction = kClose;
-			defaultThirdAction = kActionNone;
+			if (isOverrideEnabled) {
+				defaultFirstAction = kRelaunch;
+				defaultSecondAction = kClose;
+			} else {
+				defaultFirstAction = defaultAppFirstActionUp;
+				defaultSecondAction = defaultAppSecondActionUp;
+				defaultThirdAction = defaultAppThirdActionUp;
+			}
 		}
 	} else if (currentDirection == kDown) {
 		suffix = @"Down";
-		defaultFirstAction = kLaunch;
-		defaultSecondAction = kDismissSwitcher;
+		if (isSpringBoard) {
+			defaultFirstAction = kLaunch;
+			defaultSecondAction = kDismissSwitcher;
+		} else {
+			if (isOverrideEnabled) {
+				defaultFirstAction = kLaunch;
+				defaultSecondAction = kDismissSwitcher;
+			} else {
+				defaultFirstAction = defaultAppFirstActionDown;
+				defaultSecondAction = defaultAppSecondActionDown;
+				defaultThirdAction = defaultAppThirdActionDown;
+			}
+		}
 	}
 
-	_firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
-	_secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
-	_thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
+	if (isSpringBoard || isOverrideEnabled) {
+		_firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
+		_secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
+		_thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
+	} else {
+		_firstAction = defaultFirstAction;
+		_secondAction = defaultSecondAction;
+		_thirdAction = defaultThirdAction;
+	}
 }
 
 %new
@@ -449,11 +492,11 @@ UIAlertController *alert = nil;
 			}
 
 			NSString *appName = (MSHookIvar<UILabel *>(container, "_iconTitle")).text;
-			NSString *displayMessage = [NSString stringWithFormat:@"%@ is currently now playing. Would you like to continue?", appName];
+			NSString *displayMessage = [NSString stringWithFormat:@"%@ is currently now playing app. Are you sure you'd like to close it?", appName];
 			alert = [UIAlertController alertControllerWithTitle:@"EnhancedSwitcherClose" message:displayMessage preferredStyle:UIAlertControllerStyleAlert];
 
 
-			UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+			UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes, Close" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 				[self killDisplayItemOfContainer:container withVelocity:1.0];
 				NSArray *items = [self displayItems];
 				if ([items count] == 1 && isAutoCloseSwitcherEnabled) {
@@ -461,7 +504,7 @@ UIAlertController *alert = nil;
 				}
 				alert = nil;
 			}];
-			UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+			UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No, Keep" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
 				alert = nil;
 			}];
 
@@ -587,7 +630,12 @@ UIAlertController *alert = nil;
 			return;
 		}
 
-		if (!boolValuePerApp(selected.displayIdentifier, kPerApp, YES)) {
+		BOOL isAppEnabled = isDefaultAppEnabled;
+		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+		}
+
+		if (!isAppEnabled) {
 			%orig(arg1, arg2);
 			return;
 		}
@@ -625,7 +673,12 @@ UIAlertController *alert = nil;
 }
 
 -(_Bool)isDisplayItemOfContainerRemovable:(id)arg1 {
-	if (isTweakEnabled && boolValuePerApp([arg1 displayItem].displayIdentifier, kPerApp, YES)) {
+	BOOL isAppEnabled = isDefaultAppEnabled;
+	if (boolValuePerApp([arg1 displayItem].displayIdentifier, kOverridePerApp, NO)) {
+		isAppEnabled = boolValuePerApp([arg1 displayItem].displayIdentifier, kPerApp, YES);
+	}
+
+	if (isTweakEnabled && isAppEnabled) {
 		return NO;
 	}
 	return %orig(arg1);

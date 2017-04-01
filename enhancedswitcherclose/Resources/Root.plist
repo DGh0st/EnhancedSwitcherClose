@@ -30,7 +30,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Home Screen</string>
+			<string>Home Screen Settings</string>
 			<key>detail</key>
 			<string>ESCHomeListController</string>
 			<key>isController</key>
@@ -40,7 +40,17 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Applications</string>
+			<string>Default Application Settings</string>
+			<key>detail</key>
+			<string>ESCDefaultAppsListController</string>
+			<key>isController</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>label</key>
+			<string>Applications Settings</string>
 			<key>detail</key>
 			<string>ESCAppsListController</string>
 			<key>isController</key>
@@ -50,7 +60,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Customize</string>
+			<string>Customize Settings</string>
 			<key>detail</key>
 			<string>ESCCustomizeListController</string>
 			<key>isController</key>

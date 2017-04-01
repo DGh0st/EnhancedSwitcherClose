@@ -11,6 +11,10 @@
 
 @end
 
+@interface ESCDefaultAppsListController : PSListController
+
+@end
+
 @interface ESCAppsListController : PSViewController <UITableViewDelegate> {
 	UITableView *_tableView;
 	ALApplicationTableDataSource *_dataSource;

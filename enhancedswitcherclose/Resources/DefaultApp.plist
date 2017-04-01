@@ -14,20 +14,6 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.dgh0st.enhancedswitcherclose</string>
-			<key>key</key>
-			<string>isOverrideEnabled</string>
-			<key>label</key>
-			<string>Override Default</string>
-			<key>PostNotification</key>
-			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
 			<true/>
 			<key>defaults</key>
 			<string>com.dgh0st.enhancedswitcherclose</string>
@@ -304,6 +290,6 @@
 		</dict>
 	</array>
 	<key>title</key>
-	<string></string>
+	<string>Default</string>
 </dict>
 </plist>
