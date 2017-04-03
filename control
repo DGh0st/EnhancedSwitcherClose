@@ -1,7 +1,7 @@
 Package: com.dgh0st.enhancedswitcherclose
 Name: EnhancedSwitcherClose
 Depends: mobilesubstrate
-Version: 0.0.5
+Version: 0.0.6
 Architecture: iphoneos-arm
 Description: Enhance Switcher Close by adding more swipe up features with clean UI.
 Maintainer: DGh0st <deeppwnage@yahoo.com>

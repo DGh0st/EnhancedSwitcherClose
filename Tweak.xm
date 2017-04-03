@@ -43,6 +43,12 @@ typedef enum {
 	kQuickLaunch
 } Action;
 
+typedef enum {
+	kLeft = 0,
+	kCenter,
+	kRight
+} Position;
+
 static NSString *displayTitles[9] = {
 	@"",
 	@"Respring",
@@ -82,6 +88,7 @@ static Action defaultAppThirdActionDown = kActionNone;
 static Action defaultAppFirstActionUp = kRelaunch;
 static Action defaultAppSecondActionUp = kClose;
 static Action defaultAppThirdActionUp = kActionNone;
+static Position labelPosition = kCenter;
 
 NSDictionary *prefs = nil;
 BOOL isClosingAll = NO;
@@ -171,6 +178,7 @@ static void preferencesChanged() {
 	defaultAppFirstActionUp = (Action)intValueForKey(@"AppFirstActionUp", kRelaunch);
 	defaultAppSecondActionUp = (Action)intValueForKey(@"AppSecondActionUp", kClose);
 	defaultAppThirdActionUp = (Action)intValueForKey(@"AppThirdActionUp", kActionNone);
+	labelPosition = (Position)intValueForKey(@"LabelPosition", kCenter);
 }
 
 @interface SBDisplayItem : NSObject
@@ -346,24 +354,42 @@ Action _thirdAction = kActionNone;
 	label.textAlignment = NSTextAlignmentCenter;
 	[createdView addSubview:label];
 
-	UIView *rightSeparator = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.size.width * 2  / 3, arg2, pageViewFrame.size.width / 3 - 8, 2)];
+	UIView *rightSeparator = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.size.width / 3 * 2, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	rightSeparator.backgroundColor = arg3;
 	[createdView addSubview:rightSeparator];
 
 	[label sizeToFit];
 
 	CGRect labelFrame = label.frame;
-	labelFrame.size.width += 16;
-	labelFrame.origin.x = pageViewFrame.size.width / 2 - labelFrame.size.width / 2;
-	label.frame = labelFrame;
-
 	CGRect leftSeparatorFrame = leftSeparator.frame;
-	leftSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
-	leftSeparator.frame = leftSeparatorFrame;
-
 	CGRect rightSeparatorFrame = rightSeparator.frame;
-	rightSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
-	rightSeparatorFrame.origin.x = pageViewFrame.size.width / 2 + labelFrame.size.width / 2;
+	
+	labelFrame.size.width += 16;
+
+	if (labelPosition == kLeft) {
+		labelFrame.origin.x = pageViewFrame.size.width / 16;
+
+		leftSeparatorFrame.size.width = pageViewFrame.size.width / 16 - 8;
+
+		rightSeparatorFrame.size.width = pageViewFrame.size.width - leftSeparatorFrame.size.width - labelFrame.size.width - 16;
+	} else if (labelPosition == kRight) {
+		labelFrame.origin.x = pageViewFrame.size.width * 15 / 16 - labelFrame.size.width;
+
+		rightSeparatorFrame.size.width = pageViewFrame.size.width / 16 - 8;
+
+		leftSeparatorFrame.size.width = pageViewFrame.size.width - rightSeparatorFrame.size.width - labelFrame.size.width - 16;
+	} else {
+		labelFrame.origin.x = pageViewFrame.size.width / 2 - labelFrame.size.width / 2;
+
+		leftSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
+
+		rightSeparatorFrame.size.width = pageViewFrame.size.width / 2 - labelFrame.size.width / 2 - 8;
+	}
+
+	rightSeparatorFrame.origin.x = labelFrame.origin.x + labelFrame.size.width;
+
+	label.frame = labelFrame;
+	leftSeparator.frame = leftSeparatorFrame;
 	rightSeparator.frame = rightSeparatorFrame;
 }
 
