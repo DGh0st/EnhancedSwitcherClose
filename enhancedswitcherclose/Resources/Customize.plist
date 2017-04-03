@@ -161,7 +161,7 @@ Prevent Kill-All from killing now playing application.</string>
 			<key>label</key>
 			<string>Label Settings</string>
 			<key>footerText</key>
-			<string>Select applications to launch on "Quick Launch" action.</string>
+			<string>Select position of the label that is displayed.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
