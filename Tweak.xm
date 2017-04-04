@@ -1,6 +1,7 @@
 #include <SpringBoard/SpringBoard.h>
 #include <SpringBoard/SBApplication.h>
 #include <SpringBoard/SBMediaController.h>
+#include <libcolorpicker.h>
 
 #define kFirstActionOffset 0.1
 #define kSecondActionOffset 0.2
@@ -59,18 +60,6 @@ static NSString *displayTitles[9] = {
 	@"Close",
 	@"Relaunch",
 	@"Quick Launch"
-};
-
-static UIColor *displayColors[9] = {
-	[UIColor clearColor],
-	[UIColor redColor],
-	[UIColor orangeColor],
-	[UIColor greenColor],
-	[UIColor greenColor],
-	[UIColor orangeColor],
-	[UIColor redColor],
-	[UIColor orangeColor],
-	[UIColor greenColor]
 };
 
 static BOOL isTweakEnabled = YES;
@@ -142,6 +131,14 @@ static NSInteger intValuePerApp(NSString *appId, NSString *prefix, NSInteger def
 		}
 	}
 	return defaultValue;
+}
+
+static NSString *stringValueForKey(NSString *key, NSString *defaultValue) {
+	NSString *temp = [[NSDictionary dictionaryWithContentsOfFile:kSettingsPath] objectForKey:key];
+	if (temp == nil) {
+		temp = defaultValue;
+	}
+	return temp;
 }
 
 static NSMutableArray *prefixApps(NSString *prefix) { // get app identifiers that match the prefix from preference of quick launch (AppList)
@@ -395,12 +392,35 @@ Action _thirdAction = kActionNone;
 
 %new
 -(void)createLabels {
+	NSString *respringColor = stringValueForKey(@"respringColor", @"#FF0000");
+	NSString *killAllColor = stringValueForKey(@"killAllColor", @"#FF8800");
+	NSString *relaunchAllColor = stringValueForKey(@"relaunchAllColor", @"#00FF00");
+	NSString *launchColor = stringValueForKey(@"launchColor", @"#00FF00");
+	NSString *dismissSwitcherColor = stringValueForKey(@"dismissSwitcherColor", @"#FF8800");
+	NSString *closeColor = stringValueForKey(@"closeColor", @"#FF0000");
+	NSString *relaunchColor = stringValueForKey(@"relaunchColor", @"#FF8800");
+	NSString *quickLaunchColor = stringValueForKey(@"quickLaunchColor", @"#00FF00");
+
+	UIColor *displayColors[9] = {
+		nil,
+		(UIColor *)LCPParseColorString(respringColor, @"#FF0000"),
+		(UIColor *)LCPParseColorString(killAllColor, @"#FF8800"),
+		(UIColor *)LCPParseColorString(relaunchAllColor, @"#00FF00"),
+		(UIColor *)LCPParseColorString(launchColor, @"#00FF00"),
+		(UIColor *)LCPParseColorString(dismissSwitcherColor, @"#FF8800"),
+		(UIColor *)LCPParseColorString(closeColor, @"#FF0000"),
+		(UIColor *)LCPParseColorString(relaunchColor, @"#FF8800"),
+		(UIColor *)LCPParseColorString(quickLaunchColor, @"#00FF00")
+	};
+
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
 	CGRect pageViewFrame = [self _frameForPageView];
 
 	if (createdView == nil) {
+		NSString *backgroundColor = stringValueForKey(@"backgroundColor", @"#000000");
+
 		createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, 0, pageViewFrame.size.width, pageViewFrame.size.height)];
-		createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+		createdView.backgroundColor = (UIColor *)LCPParseColorString(backgroundColor, @"000000");//[[UIColor blackColor] colorWithAlphaComponent:0.5];
 	}
 	
 	if (_firstAction != kActionNone) {
@@ -461,7 +481,7 @@ Action _thirdAction = kActionNone;
 		if (alpha > 0.5) {
 			alpha = 0.5;
 		}
-		createdView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:alpha];
+		createdView.backgroundColor = [createdView.backgroundColor colorWithAlphaComponent:alpha];
 	}
 	if (arg2 == currentDirection) {
 		return;

@@ -179,3 +179,15 @@
 }
 
 @end
+
+@implementation ESCPersonalizeListController
+
+- (NSArray *)specifiers {
+	if (!_specifiers) {
+		_specifiers = [[self loadSpecifiersFromPlistName:@"Personalize" target:self] retain];
+	}
+
+	return _specifiers;
+}
+
+@end

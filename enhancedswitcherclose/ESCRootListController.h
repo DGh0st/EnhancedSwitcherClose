@@ -31,3 +31,7 @@
 @interface ESCCustomizeListController : PSListController
 
 @end
+
+@interface ESCPersonalizeListController : PSListController
+
+@end

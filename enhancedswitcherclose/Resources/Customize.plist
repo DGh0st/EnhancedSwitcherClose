@@ -155,52 +155,8 @@ Prevent Kill-All from killing now playing application.</string>
 			<key>ALChangeNotification</key>
 			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
 		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Label Settings</string>
-			<key>footerText</key>
-			<string>Select position of the label that is displayed.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>key</key>
-			<string>LabelPosition</string>
-			<key>label</key>
-			<string>Position</string>
-			<key>detail</key>
-			<string>PSListItemsController</string>
-			<key>validTitles</key>
-				<array>
-					<string>Left</string>
-					<string>Center</string>
-					<string>Right</string>
-				</array>
-			<key>validValues</key>
-				<array>
-					<integer>0</integer><!--Left-->
-					<integer>1</integer><!--Center-->
-					<integer>2</integer><!--Right-->
-				</array>
-			<key>default</key>
-			<integer>1</integer>
-			<key>defaults</key>
-			<string>com.dgh0st.enhancedswitcherclose</string>
-			<key>PostNotification</key>
-			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerAlignment</key>
-			<integer>1</integer>
-			<key>footerText</key>
-			<string>EnhancedSwitcherClose © 2017 DGh0st</string>
-		</dict>
 	</array>
 	<key>title</key>
-	<string>Customize</string>
+	<string>Customize Features</string>
 </dict>
 </plist>

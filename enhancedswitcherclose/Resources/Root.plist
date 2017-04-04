@@ -60,9 +60,19 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Customize Settings</string>
+			<string>Customize Feature Settings</string>
 			<key>detail</key>
 			<string>ESCCustomizeListController</string>
+			<key>isController</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>label</key>
+			<string>Personalize Settings</string>
+			<key>detail</key>
+			<string>ESCPersonalizeListController</string>
 			<key>isController</key>
 			<true/>
 		</dict>

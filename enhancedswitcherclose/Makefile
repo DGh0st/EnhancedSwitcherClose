@@ -5,7 +5,7 @@ EnhancedSwitcherClose_FILES = ESCRootListController.mm
 EnhancedSwitcherClose_INSTALL_PATH = /Library/PreferenceBundles
 EnhancedSwitcherClose_FRAMEWORKS = UIKit MessageUI
 EnhancedSwitcherClose_PRIVATE_FRAMEWORKS = Preferences
-EnhancedSwitcherClose_LIBRARIES = applist
+EnhancedSwitcherClose_LIBRARIES = applist colorpicker
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

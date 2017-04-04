@@ -1,6 +1,6 @@
 Package: com.dgh0st.enhancedswitcherclose
 Name: EnhancedSwitcherClose
-Depends: mobilesubstrate
+Depends: mobilesubstrate, preferenceloader, applist, org.thebigboss.libcolorpicker
 Version: 0.0.6
 Architecture: iphoneos-arm
 Description: Enhance Switcher Close by adding more swipe up features with clean UI.
