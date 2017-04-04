@@ -235,7 +235,7 @@
 				<false/>
 			</dict>
 			<key>label</key>
-			<string>Relaunch</string>
+			<string>Background</string>
 		</dict>
 		<dict>
 			<key>cell</key>
