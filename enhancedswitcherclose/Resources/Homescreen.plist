@@ -32,6 +32,20 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isHomeSwipeDownEnabled</string>
+			<key>label</key>
+			<string>Enable Swipe Down</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>key</key>
 			<string>HomeFirstActionDown</string>
@@ -145,6 +159,20 @@
 			<string>Swipe Up Actions</string>
 			<key>footerText</key>
 			<string>set the actions for swipe up</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.dgh0st.enhancedswitcherclose</string>
+			<key>key</key>
+			<string>isHomeSwipeUpEnabled</string>
+			<key>label</key>
+			<string>Enable Swipe Up</string>
+			<key>PostNotification</key>
+			<string>com.dgh0st.enhancedswitcherclose/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>

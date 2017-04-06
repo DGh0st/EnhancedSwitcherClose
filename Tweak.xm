@@ -21,10 +21,8 @@
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist"
 #define identifier @"com.dgh0st.enhancedswitcherclose"
-#define kPerAppKill @"PerAppKill-"
 #define kPerApp @"isAppEnabled-"
 #define kOverridePerApp @"isOverrideEnabled-"
-#define kQuickLaunchApps @"QuickLaunch-"
 
 typedef enum {
 	kUp = 0,
@@ -64,6 +62,8 @@ static NSString *displayTitles[9] = {
 
 static BOOL isTweakEnabled = YES;
 static BOOL isHomeEnabled = YES;
+static BOOL isHomeSwipeDownEnabled = YES;
+static BOOL isHomeSwipeUpEnabled = YES;
 static BOOL isNowPlayingEnabled = NO;
 static BOOL isAlertNowPlayingEnabled = NO;
 static BOOL isWhitelistEnabled = NO;
@@ -71,6 +71,8 @@ static BOOL isAutoDismissOnKillEnabled = YES;
 static BOOL isNowPlayingOnKillEnabled = NO;
 static BOOL isAutoCloseSwitcherEnabled = NO;
 static BOOL isDefaultAppEnabled = YES;
+static BOOL isDefaultAppSwipeDownEnabled = YES;
+static BOOL isDefaultAppSwipeUpEnabled = YES;
 static Action defaultAppFirstActionDown = kLaunch;
 static Action defaultAppSecondActionDown = kDismissSwitcher;
 static Action defaultAppThirdActionDown = kActionNone;
@@ -162,6 +164,8 @@ static void preferencesChanged() {
 
 	isTweakEnabled = boolValueForKey(@"isEnabled", YES);
 	isHomeEnabled = boolValueForKey(@"isHomeEnabled", YES);
+	isHomeSwipeDownEnabled = boolValueForKey(@"isHomeSwipeDownEnabled", YES);
+	isHomeSwipeUpEnabled = boolValueForKey(@"isHomeSwipeUpEnabled", YES);
 	isNowPlayingEnabled = boolValueForKey(@"isNowPlayingEnabled", NO);
 	isAlertNowPlayingEnabled = boolValueForKey(@"isAlertNowPlayingEnabled", NO);
 	isWhitelistEnabled = boolValueForKey(@"isWhitelistEnabled", NO);
@@ -169,6 +173,8 @@ static void preferencesChanged() {
 	isNowPlayingOnKillEnabled = boolValueForKey(@"isNowPlayingOnKillEnabled", NO);
 	isAutoCloseSwitcherEnabled = boolValueForKey(@"isAutoCloseSwitcherEnabled", NO);
 	isDefaultAppEnabled = boolValueForKey(@"isAppEnabled", YES);
+	isDefaultAppSwipeDownEnabled = boolValueForKey(@"isAppSwipeDownEnabled", YES);
+	isDefaultAppSwipeUpEnabled = boolValueForKey(@"isAppSwipeUpEnabled", YES);
 	defaultAppFirstActionDown = (Action)intValueForKey(@"AppFirstActionDown", kLaunch);
 	defaultAppSecondActionDown = (Action)intValueForKey(@"AppSecondActionDown", kDismissSwitcher);
 	defaultAppThirdActionDown = (Action)intValueForKey(@"AppThirdActionDown", kActionNone);
@@ -268,7 +274,7 @@ Action _thirdAction = kActionNone;
 
 %new
 -(void)updateActionswithIsSpringBoard:(BOOL)isSpringBoard {
-	BOOL isOverrideEnabled = boolValuePerApp([self displayItem].displayIdentifier, kOverridePerApp, NO);
+	BOOL isOverrideEnabled = NO;
 
 	NSString *prefix = @"";
 	NSString *itemIdentifier = @"";
@@ -276,6 +282,7 @@ Action _thirdAction = kActionNone;
 		prefix = @"Home";
 		itemIdentifier = @"";
 	} else {
+		isOverrideEnabled = boolValuePerApp([self displayItem].displayIdentifier, kOverridePerApp, NO);
 		prefix = @"App";
 		itemIdentifier = [NSString stringWithFormat:@"-%@", [self displayItem].displayIdentifier];
 	}
@@ -420,7 +427,7 @@ Action _thirdAction = kActionNone;
 		NSString *backgroundColor = stringValueForKey(@"backgroundColor", @"#000000");
 
 		createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, 0, pageViewFrame.size.width, pageViewFrame.size.height)];
-		createdView.backgroundColor = (UIColor *)LCPParseColorString(backgroundColor, @"000000");//[[UIColor blackColor] colorWithAlphaComponent:0.5];
+		createdView.backgroundColor = (UIColor *)LCPParseColorString(backgroundColor, @"#000000");
 	}
 	
 	if (_firstAction != kActionNone) {
@@ -478,8 +485,8 @@ Action _thirdAction = kActionNone;
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3 {
 	if (createdView != nil) {
 		CGFloat alpha = fabs(arg1) * 2.5;
-		if (alpha > 0.5) {
-			alpha = 0.5;
+		if (alpha > 0.66) {
+			alpha = 0.66;
 		}
 		createdView.backgroundColor = [createdView.backgroundColor colorWithAlphaComponent:alpha];
 	}
@@ -607,7 +614,7 @@ UIAlertController *alert = nil;
 
 %new
 -(void)quickLaunch {
-	NSMutableArray *items = prefixApps(kQuickLaunchApps);
+	NSMutableArray *items = prefixApps(@"QuickLaunch-");
 	if ([items count] > 0) {
 		[self launchApplications:items withIdentifiers:YES];
 	}
@@ -671,19 +678,25 @@ UIAlertController *alert = nil;
 		SBDisplayItem *selected = [arg2 displayItem];
 		BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
 
-		if (isSpringBoard && !isHomeEnabled) {
-			%orig(arg1, arg2);
-			return;
-		}
+		if (isSpringBoard) {
+			if (!isHomeEnabled || (arg1 > 0.0 && !isHomeSwipeUpEnabled) || (arg1 < 0.0 && !isHomeSwipeDownEnabled)) {
+				%orig(arg1, arg2);
+				return;
+			}
+		} else {
+			BOOL isAppEnabled = isDefaultAppEnabled;
+			BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+			BOOL isAppSwipeDownEnabled = isDefaultAppSwipeDownEnabled;
+			if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+				isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+				isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+				isAppSwipeDownEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeDownEnabled-", YES);
+			}
 
-		BOOL isAppEnabled = isDefaultAppEnabled;
-		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
-			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
-		}
-
-		if (!isAppEnabled) {
-			%orig(arg1, arg2);
-			return;
+			if (!isAppEnabled || (arg1 > 0.0 && !isAppSwipeUpEnabled) || (arg1 < 0.0 && !isAppSwipeDownEnabled)) {
+				%orig(arg1, arg2);
+				return;
+			}
 		}
 
 		if (arg1 > 0.0) {
@@ -719,13 +732,22 @@ UIAlertController *alert = nil;
 }
 
 -(_Bool)isDisplayItemOfContainerRemovable:(id)arg1 {
-	BOOL isAppEnabled = isDefaultAppEnabled;
-	if (boolValuePerApp([arg1 displayItem].displayIdentifier, kOverridePerApp, NO)) {
-		isAppEnabled = boolValuePerApp([arg1 displayItem].displayIdentifier, kPerApp, YES);
-	}
+	SBDisplayItem *selected = [arg1 displayItem];
+	BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
 
-	if (isTweakEnabled && isAppEnabled) {
-		return NO;
+	if (isSpringBoard || !isTweakEnabled) {
+		return %orig(arg1);
+	} else {
+		BOOL isAppEnabled = isDefaultAppEnabled;
+		BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+			isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+		}
+
+		if (isAppEnabled && isAppSwipeUpEnabled) {
+			return NO;
+		}
 	}
 	return %orig(arg1);
 }
@@ -738,7 +760,7 @@ UIAlertController *alert = nil;
 	[items removeObjectAtIndex:0]; // remove springboard
 	for(SBDisplayItem *item in items) { // close applications
 		if (includeWhitelist) {
-			if (!isWhitelistEnabled || !boolValuePerApp(item.displayIdentifier, kPerAppKill, NO)) {
+			if (!isWhitelistEnabled || !boolValuePerApp(item.displayIdentifier, @"PerAppKill-", NO)) {
 				if (isNowPlayingOnKillEnabled && [item.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
 					continue;
 				}
