@@ -80,6 +80,7 @@
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
 					<string>Relaunch</string>
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -92,6 +93,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>4</integer>
@@ -119,7 +121,8 @@
 					<string>Launch</string>
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
-					<string>Relaunch</string>
+					<string>Relaunch</string>					
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -132,6 +135,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>5</integer>
@@ -159,7 +163,8 @@
 					<string>Launch</string>
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
-					<string>Relaunch</string>
+					<string>Relaunch</string>					
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -172,6 +177,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>0</integer>
@@ -221,7 +227,8 @@
 					<string>Launch</string>
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
-					<string>Relaunch</string>
+					<string>Relaunch</string>					
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -234,6 +241,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>7</integer>
@@ -261,7 +269,8 @@
 					<string>Launch</string>
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
-					<string>Relaunch</string>
+					<string>Relaunch</string>					
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -274,6 +283,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>6</integer>
@@ -301,7 +311,8 @@
 					<string>Launch</string>
 					<string>Dismiss Switcher</string>
 					<string>Close</string>
-					<string>Relaunch</string>
+					<string>Relaunch</string>					
+					<string>Safemode (RIP CrashReporter)</string>
 				</array>
 			<key>validValues</key>
 				<array>
@@ -314,6 +325,7 @@
 					<integer>5</integer><!--Dismiss Switcher-->
 					<integer>6</integer><!--Close-->
 					<integer>7</integer><!--Relaunch-->
+					<integer>9</integer><!--Safemode-->
 				</array>
 			<key>default</key>
 			<integer>0</integer>

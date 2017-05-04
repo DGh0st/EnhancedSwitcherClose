@@ -39,7 +39,8 @@ typedef enum {
 	kDismissSwitcher,
 	kClose,
 	kRelaunch,
-	kQuickLaunch
+	kQuickLaunch,
+	kSafemode
 } Action;
 
 typedef enum {
@@ -48,7 +49,7 @@ typedef enum {
 	kRight
 } Position;
 
-static NSString *displayTitles[9] = {
+static NSString *displayTitles[10] = {
 	@"",
 	@"Respring",
 	@"Kill-All",
@@ -57,7 +58,8 @@ static NSString *displayTitles[9] = {
 	@"Dismiss Switcher",
 	@"Close",
 	@"Relaunch",
-	@"Quick Launch"
+	@"Quick Launch",
+	@"Safemode"
 };
 
 static BOOL isTweakEnabled = YES;
@@ -202,6 +204,7 @@ static void preferencesChanged() {
 -(void)dismissSwitcher;
 -(void)launchApp:(id)container;
 -(void)quickLaunch;
+-(void)RIPCrashReporter;
 -(void)performAction:(Action)action withContainer:(id)container withDisplayItem:(id)item;
 -(void)performActionWithActionIndex:(NSInteger)index withContainer:(id)container withDisplayItem:(id)item withIsSpringBoard:(BOOL)isSpringBoard;
 @end
@@ -407,8 +410,9 @@ Action _thirdAction = kActionNone;
 	NSString *closeColor = stringValueForKey(@"closeColor", @"#FF0000");
 	NSString *relaunchColor = stringValueForKey(@"relaunchColor", @"#FF8800");
 	NSString *quickLaunchColor = stringValueForKey(@"quickLaunchColor", @"#00FF00");
+	NSString *safemodeColor = stringValueForKey(@"safemodeColor", @"#FFFF00");
 
-	UIColor *displayColors[9] = {
+	UIColor *displayColors[10] = {
 		nil,
 		(UIColor *)LCPParseColorString(respringColor, @"#FF0000"),
 		(UIColor *)LCPParseColorString(killAllColor, @"#FF8800"),
@@ -417,7 +421,8 @@ Action _thirdAction = kActionNone;
 		(UIColor *)LCPParseColorString(dismissSwitcherColor, @"#FF8800"),
 		(UIColor *)LCPParseColorString(closeColor, @"#FF0000"),
 		(UIColor *)LCPParseColorString(relaunchColor, @"#FF8800"),
-		(UIColor *)LCPParseColorString(quickLaunchColor, @"#00FF00")
+		(UIColor *)LCPParseColorString(quickLaunchColor, @"#00FF00"),
+		(UIColor *)LCPParseColorString(safemodeColor, @"#FFFF00")
 	};
 
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
@@ -484,7 +489,7 @@ Action _thirdAction = kActionNone;
 %new
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3 {
 	if (createdView != nil) {
-		CGFloat alpha = fabs(arg1) * 2.5;
+		CGFloat alpha = fabs(arg1) * 3;
 		if (alpha > 0.66) {
 			alpha = 0.66;
 		}
@@ -649,6 +654,9 @@ UIAlertController *alert = nil;
 			return;
 		case kQuickLaunch:
 			[self quickLaunch];
+			return;
+		case kSafemode:
+			[self RIPCrashReporter];
 			return;
 		default:
 			return;
