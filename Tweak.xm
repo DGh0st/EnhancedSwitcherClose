@@ -87,6 +87,11 @@ NSDictionary *prefs = nil;
 BOOL isClosingAll = NO;
 
 static void reloadPrefs() {
+	if (prefs != nil) {
+		[prefs release];
+		prefs = nil;
+	}
+
 	if ([NSHomeDirectory() isEqualToString:@"/var/mobile"]) {
 		CFArrayRef keyList = CFPreferencesCopyKeyList((CFStringRef)identifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 		if (keyList) {
@@ -519,6 +524,8 @@ Action _thirdAction = kActionNone;
 UIAlertController *alert = nil;
 
 -(void)viewWillDisappear:(BOOL)arg1 {
+	%orig(arg1);
+	
 	if (alert) {
 		[alert dismissViewControllerAnimated:YES completion:nil];
 		alert = nil;
@@ -798,6 +805,11 @@ UIAlertController *alert = nil;
 
 %dtor {
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, CFSTR("com.dgh0st.enhancedswitcherclose/settingschanged"), NULL);
+
+	if (prefs != nil) {
+		[prefs release];
+		prefs = nil;
+	}
 }
 
 %ctor {
