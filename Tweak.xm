@@ -20,6 +20,7 @@
 #define kThirdAction @"ThirdAction"
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist"
+#define kColorPath @"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.color.plist"
 #define identifier @"com.dgh0st.enhancedswitcherclose"
 #define kPerApp @"isAppEnabled-"
 #define kOverridePerApp @"isOverrideEnabled-"
@@ -143,7 +144,7 @@ static NSInteger intValuePerApp(NSString *appId, NSString *prefix, NSInteger def
 }
 
 static NSString *stringValueForKey(NSString *key, NSString *defaultValue) {
-	NSString *temp = [[NSDictionary dictionaryWithContentsOfFile:kSettingsPath] objectForKey:key];
+	NSString *temp = [[NSDictionary dictionaryWithContentsOfFile:kColorPath] objectForKey:key];
 	if (temp == nil) {
 		temp = defaultValue;
 	}

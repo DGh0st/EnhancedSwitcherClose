@@ -16,6 +16,7 @@
 		[email setSubject:@"EnhancedSwitcherClose Support"];
 		[email setToRecipients:[NSArray arrayWithObjects:@"deeppwnage@yahoo.com", nil]];
 		[email addAttachmentData:[NSData dataWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist"] mimeType:@"application/xml" fileName:@"Prefs.plist"];
+		[email addAttachmentData:[NSData dataWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.color.plist"] mimeType:@"application/xml" fileName:@"Color.plist"];
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		system("/usr/bin/dpkg -l > /tmp/dpkgl.log");
