@@ -25,13 +25,13 @@
 #define kPerApp @"isAppEnabled-"
 #define kOverridePerApp @"isOverrideEnabled-"
 
-typedef enum {
+typedef NS_ENUM(NSInteger, Direction) {
 	kUp = 0,
 	kDown,
 	kNone
-} Direction;
+};
 
-typedef enum {
+typedef NS_ENUM(NSInteger, Action) {
 	kActionNone = 0,
 	kRespring,
 	kKillAll,
@@ -42,13 +42,13 @@ typedef enum {
 	kRelaunch,
 	kQuickLaunch,
 	kSafemode
-} Action;
+};
 
-typedef enum {
+typedef NS_ENUM(NSInteger, Position) {
 	kLeft = 0,
 	kCenter,
 	kRight
-} Position;
+};
 
 static NSString *displayTitles[10] = {
 	@"",
@@ -216,6 +216,12 @@ static void preferencesChanged() {
 @end
 
 @interface SBDeckSwitcherItemContainer : UIView
+@property (nonatomic, retain) UIView *createdView;
+@property (nonatomic, assign) Direction currentDirection;
+@property (nonatomic, assign) BOOL _shouldPerformAction;
+@property (nonatomic, assign) Action _firstAction;
+@property (nonatomic, assign) Action _secondAction;
+@property (nonatomic, assign) Action _thirdAction;
 @property(readonly, retain, nonatomic) SBDisplayItem *displayItem;
 -(void)_handlePageViewTap:(id)arg1;
 -(CGRect)_frameForScrollView;
@@ -259,26 +265,40 @@ static void preferencesChanged() {
 @end
 
 %hook SBDeckSwitcherItemContainer
-UIView *createdView = nil;
-Direction currentDirection = kNone;
-BOOL _shouldPerformAction = NO;
-Action _firstAction = kActionNone;
-Action _secondAction = kActionNone;
-Action _thirdAction = kActionNone;
+%property (nonatomic, retain) UIView *createdView;
+%property (nonatomic, assign) NSInteger currentDirection;
+%property (nonatomic, assign) BOOL _shouldPerformAction;
+%property (nonatomic, assign) NSInteger _firstAction;
+%property (nonatomic, assign) NSInteger _secondAction;
+%property (nonatomic, assign) NSInteger _thirdAction;
+
+-(id)initWithFrame:(CGRect)arg1 displayItem:(id)arg2 delegate:(id)arg3 {
+	self = %orig(arg1, arg2, arg3);
+	if (self != nil) {
+		[self removeLabels];
+		self.createdView = nil;
+		self.currentDirection = kNone;
+		self._shouldPerformAction = NO;
+		self._firstAction = kActionNone;
+		self._secondAction = kActionNone;
+		self._thirdAction = kActionNone;
+	}
+	return self;
+}
 
 %new
 -(Action)firstAction {
-	return _firstAction;
+	return self._firstAction;
 }
 
 %new
 -(Action)secondAction {
-	return _secondAction;
+	return self._secondAction;
 }
 
 %new
 -(Action)thirdAction {
-	return _thirdAction;
+	return self._thirdAction;
 }
 
 %new
@@ -300,7 +320,7 @@ Action _thirdAction = kActionNone;
 	Action defaultFirstAction = kActionNone;
 	Action defaultSecondAction = kActionNone;
 	Action defaultThirdAction = kActionNone;
-	if (currentDirection == kUp) {
+	if (self.currentDirection == kUp) {
 		suffix = @"Up";
 		if (isSpringBoard) {
 			defaultFirstAction = kRelaunchAll;
@@ -316,7 +336,7 @@ Action _thirdAction = kActionNone;
 				defaultThirdAction = defaultAppThirdActionUp;
 			}
 		}
-	} else if (currentDirection == kDown) {
+	} else if (self.currentDirection == kDown) {
 		suffix = @"Down";
 		if (isSpringBoard) {
 			defaultFirstAction = kLaunch;
@@ -334,20 +354,20 @@ Action _thirdAction = kActionNone;
 	}
 
 	if (isSpringBoard || isOverrideEnabled) {
-		_firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
-		_secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
-		_thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
+		self._firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
+		self._secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
+		self._thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
 	} else {
-		_firstAction = defaultFirstAction;
-		_secondAction = defaultSecondAction;
-		_thirdAction = defaultThirdAction;
+		self._firstAction = defaultFirstAction;
+		self._secondAction = defaultSecondAction;
+		self._thirdAction = defaultThirdAction;
 	}
 }
 
 %new
 -(BOOL)shouldPerformAction {
-	if (_shouldPerformAction) {
-		_shouldPerformAction = NO;
+	if (self._shouldPerformAction) {
+		self._shouldPerformAction = NO;
 		return YES;
 	}
 	return NO;
@@ -359,17 +379,17 @@ Action _thirdAction = kActionNone;
 
 	UIView *leftSeparator = [[UIView alloc] initWithFrame:CGRectMake(8, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	leftSeparator.backgroundColor = arg3;
-	[createdView addSubview:leftSeparator];
+	[self.createdView addSubview:leftSeparator];
 
 	UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(pageViewFrame.size.width / 3, arg2 - 8, pageViewFrame.size.width / 3, 16)];
 	label.text = arg1;
 	label.textColor = arg3;
 	label.textAlignment = NSTextAlignmentCenter;
-	[createdView addSubview:label];
+	[self.createdView addSubview:label];
 
 	UIView *rightSeparator = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.size.width / 3 * 2, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	rightSeparator.backgroundColor = arg3;
-	[createdView addSubview:rightSeparator];
+	[self.createdView addSubview:rightSeparator];
 
 	[label sizeToFit];
 
@@ -434,89 +454,89 @@ Action _thirdAction = kActionNone;
 	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
 	CGRect pageViewFrame = [self _frameForPageView];
 
-	if (createdView == nil) {
+	if (self.createdView == nil) {
 		NSString *backgroundColor = stringValueForKey(@"backgroundColor", @"#000000");
 
-		createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, 0, pageViewFrame.size.width, pageViewFrame.size.height)];
-		createdView.backgroundColor = (UIColor *)LCPParseColorString(backgroundColor, @"#000000");
+		self.createdView = [[UIView alloc] initWithFrame:CGRectMake(pageViewFrame.origin.x, 0, pageViewFrame.size.width, pageViewFrame.size.height)];
+		self.createdView.backgroundColor = (UIColor *)LCPParseColorString(backgroundColor, @"#000000");
 	}
 	
-	if (_firstAction != kActionNone) {
+	if (self._firstAction != kActionNone) {
 		CGFloat offset = 0.0;
-		if (currentDirection == kUp) {
+		if (self.currentDirection == kUp) {
 			offset = (1 - kFirstActionOffset);
-		} else if (currentDirection == kDown) {
+		} else if (self.currentDirection == kDown) {
 			offset = kFirstActionOffset;
 		}
-		[self addLabelWithTitle:displayTitles[_firstAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[_firstAction]];
+		[self addLabelWithTitle:displayTitles[self._firstAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[self._firstAction]];
 	}
 
-	if (_secondAction != kActionNone) {
+	if (self._secondAction != kActionNone) {
 		CGFloat offset = 0.0;
-		if (currentDirection == kUp) {
+		if (self.currentDirection == kUp) {
 			offset = (1 - kSecondActionOffset);
-		} else if (currentDirection == kDown) {
+		} else if (self.currentDirection == kDown) {
 			offset = kSecondActionOffset;
 		}
-		[self addLabelWithTitle:displayTitles[_secondAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[_secondAction]];
+		[self addLabelWithTitle:displayTitles[self._secondAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[self._secondAction]];
 	}
 
-	if (_thirdAction != kActionNone) {
+	if (self._thirdAction != kActionNone) {
 		CGFloat offset = 0.0;
-		if (currentDirection == kUp) {
+		if (self.currentDirection == kUp) {
 			offset = (1 - kThirdActionOffset);
-		} else if (currentDirection == kDown) {
+		} else if (self.currentDirection == kDown) {
 			offset = kThirdActionOffset;
 		}
-		[self addLabelWithTitle:displayTitles[_thirdAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[_thirdAction]];
+		[self addLabelWithTitle:displayTitles[self._thirdAction] withY:(pageViewFrame.size.height * offset) withColor:displayColors[self._thirdAction]];
 	}
 
-	if (_firstAction == kActionNone && _secondAction == kActionNone && _thirdAction == kActionNone) {
+	if (self._firstAction == kActionNone && self._secondAction == kActionNone && self._thirdAction == kActionNone) {
 		[self addLabelWithTitle:@"No Actions Enabled" withY:(pageViewFrame.size.height / 2) withColor:[UIColor redColor]];
 	}
 
-	[self insertSubview:createdView belowSubview:_verticalScrollView];
+	[self insertSubview:self.createdView belowSubview:_verticalScrollView];
 }
 
 %new
 -(void)removeLabels {
-	if (createdView != nil) {
-		NSArray *subViews = [createdView subviews];
+	if (self.createdView != nil) {
+		NSArray *subViews = [self.createdView subviews];
 		for (UIView *view in subViews) {
 			[view removeFromSuperview];
 			[view release];
 		}
-		[createdView removeFromSuperview];
-		[createdView release];
-		createdView = nil;
+		[self.createdView removeFromSuperview];
+		[self.createdView release];
+		self.createdView = nil;
 	}
 }
 
 %new
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3 {
-	if (createdView != nil) {
+	if (self.createdView != nil) {
 		CGFloat alpha = fabs(arg1) * 3;
 		if (alpha > 0.66) {
 			alpha = 0.66;
 		}
-		createdView.backgroundColor = [createdView.backgroundColor colorWithAlphaComponent:alpha];
+		self.createdView.backgroundColor = [self.createdView.backgroundColor colorWithAlphaComponent:alpha];
 	}
-	if (arg2 == currentDirection) {
+	if (arg2 == self.currentDirection) {
 		return;
 	}
-	if (currentDirection == kUp || currentDirection == kDown) {
+	if (self.currentDirection == kUp || self.currentDirection == kDown) {
 		[self removeLabels];
 	}
-	currentDirection = arg2;
-	if (currentDirection == kUp || currentDirection == kDown) {
-		_shouldPerformAction = NO;
+	self.currentDirection = arg2;
+	if (self.currentDirection == kUp || self.currentDirection == kDown) {
+		self._shouldPerformAction = NO;
 		[self updateActionswithIsSpringBoard:arg3];
 		[self createLabels];
 	}
 }
 
 -(void)scrollViewWillEndDragging:(id)arg1 withVelocity:(CGPoint)arg2 targetContentOffset:(id)arg3 {
-	_shouldPerformAction = YES;
+	self._shouldPerformAction = YES;
 	%orig(arg1, arg2, arg3);
 }
 %end
@@ -560,7 +580,6 @@ UIAlertController *alert = nil;
 			NSString *appName = (MSHookIvar<UILabel *>(container, "_iconTitle")).text;
 			NSString *displayMessage = [NSString stringWithFormat:@"%@ is currently now playing app. Are you sure you'd like to close it?", appName];
 			alert = [UIAlertController alertControllerWithTitle:@"EnhancedSwitcherClose" message:displayMessage preferredStyle:UIAlertControllerStyleAlert];
-
 
 			UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes, Close" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 				[self killDisplayItemOfContainer:container withVelocity:1.0];
