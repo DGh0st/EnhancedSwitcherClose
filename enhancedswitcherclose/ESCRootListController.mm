@@ -1,4 +1,5 @@
 #include "ESCRootListController.h"
+#include <spawn.h>
 
 @implementation ESCRootListController
 
@@ -17,10 +18,11 @@
 		[email setToRecipients:[NSArray arrayWithObjects:@"deeppwnage@yahoo.com", nil]];
 		[email addAttachmentData:[NSData dataWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.plist"] mimeType:@"application/xml" fileName:@"Prefs.plist"];
 		[email addAttachmentData:[NSData dataWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dgh0st.enhancedswitcherclose.color.plist"] mimeType:@"application/xml" fileName:@"Color.plist"];
-		#pragma GCC diagnostic push
-		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		system("/usr/bin/dpkg -l > /tmp/dpkgl.log");
-		#pragma GCC diagnostic pop
+		pid_t pid;
+		const char *argv[] = { "/usr/bin/dpkg", "-l", ">", "/tmp/dpkgl.log", NULL };
+		extern char *const *environ;
+		posix_spawn(&pid, argv[0], NULL, NULL, (char *const *)argv, environ);
+		waitpid(pid, NULL, 0);
 		[email addAttachmentData:[NSData dataWithContentsOfFile:@"/tmp/dpkgl.log"] mimeType:@"text/plain" fileName:@"dpkgl.txt"];
 		[self.navigationController presentViewController:email animated:YES completion:nil];
 		[email setMailComposeDelegate:self];

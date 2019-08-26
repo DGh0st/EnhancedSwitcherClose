@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
-#import <Preferences/Preferences.h>
+#import <Preferences/PSListController.h>
+#import <Preferences/PSViewController.h>
 #import <MessageUI/MFMailComposeViewController.h>
 #import <AppList/AppList.h>
 

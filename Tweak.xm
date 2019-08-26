@@ -86,6 +86,8 @@ static Position labelPosition = kCenter;
 
 NSDictionary *prefs = nil;
 BOOL isClosingAll = NO;
+UIAlertController *alert = nil;
+BOOL isUpdatingScrollContentSize = NO;
 
 static void reloadPrefs() {
 	if (prefs != nil) {
@@ -192,52 +194,120 @@ static void preferencesChanged() {
 	labelPosition = (Position)intValueForKey(@"LabelPosition", kCenter);
 }
 
-@interface SBDisplayItem : NSObject
-@property (nonatomic,readonly) NSString* displayIdentifier;
+// note these are not the only methods this protocol has
+@protocol SBMainAppSwitcherContentViewControllerDelegate <NSObject>
+@required
+-(void)switcherContentController:(id)arg1 selectedAppLayout:(id)arg2; // iOS 11+
 @end
 
-@interface SBDeckSwitcherViewController : UIViewController
+// note these are not the only methods this protocol has
+@protocol SBMainAppSwitcherContentViewControllerDataSource <NSObject>
+@required
+-(id)returnToAppLayout;
+@end
+
+// note these are not the only methods this protocol has
+@protocol SBFluidSwitcherItemContainerDelegate <NSObject> // iOS 11+
+@required
+-(BOOL)isAppLayoutOfContainerRemovable:(id)arg1;
+// -(CGFloat)minimumVerticalTranslationForKillingOfContainer:(id)arg1;
+@end
+
+@interface SBAppSwitcherSettings : NSObject
+-(NSInteger)effectiveKillAffordanceStyle; // iOS 11+
+@end
+
+@interface SBDisplayItem : NSObject
+@property (nonatomic, readonly) NSString* displayIdentifier;
+@end
+
+@interface SBAppLayout : NSObject // iOS 11+
+-(NSArray *)allItems; // array of SBDisplayItems
++(id)homeScreenAppLayout;
+@end
+
+@interface SBDeckSwitcherViewController : UIViewController // iOS 9 - 10
 @property(retain, nonatomic) NSArray *displayItems;
 -(void)killDisplayItemOfContainer:(id)arg1 withVelocity:(CGFloat)arg2;
 -(id)_itemContainerForDisplayItem:(id)arg1;
 -(void)closeAllApplications:(BOOL)includeWhitelist;
--(void)launchApplications:(NSMutableArray *)arg1 withIdentifiers:(BOOL)arg2;
--(void)respring;
 -(void)killAll;
 -(void)killApp:(id)container withDisplayItem:(id)item;
 -(void)relaunchAll;
 -(void)relaunchApp:(id)container withDisplayItem:(id)item;
 -(void)dismissSwitcher;
 -(void)launchApp:(id)container;
--(void)quickLaunch;
 -(void)RIPCrashReporter;
 -(void)performAction:(Action)action withContainer:(id)container withDisplayItem:(id)item;
 -(void)performActionWithActionIndex:(NSInteger)index withContainer:(id)container withDisplayItem:(id)item withIsSpringBoard:(BOOL)isSpringBoard;
 @end
 
-@interface SBDeckSwitcherItemContainer : UIView
+@interface SBFluidSwitcherViewController : UIViewController // iOS 11+
+@property (nonatomic, readonly) NSArray *appLayouts;
+@property (assign, nonatomic, weak) id<SBMainAppSwitcherContentViewControllerDelegate> delegate;
+@property (assign, nonatomic, weak) id<SBMainAppSwitcherContentViewControllerDataSource> dataSource;
+-(void)killAppLayoutOfContainer:(id)arg1 withVelocity:(CGFloat)arg2 forReason:(NSInteger)arg3;
+-(void)selectedAppLayoutOfContainer:(id)arg1;
+-(id)_itemContainerForAppLayoutIfExists:(id)arg1;
+-(void)closeAllApplications:(BOOL)includeWhitelist;
+-(void)killAll;
+-(void)killApp:(id)container withDisplayItem:(id)item;
+-(void)relaunchAll;
+-(void)relaunchApp:(id)container withDisplayItem:(id)item;
+-(void)dismissSwitcher;
+-(void)launchApp:(id)container;
+-(void)RIPCrashReporter;
+-(void)performAction:(Action)action withContainer:(id)container withDisplayItem:(id)item;
+-(void)performActionWithActionIndex:(NSInteger)index withContainer:(id)container withDisplayItem:(id)item withIsSpringBoard:(BOOL)isSpringBoard;
+@end
+
+@protocol EnhancedSwitcherCloseViewControllerDelegate <NSObject>
+@required
+-(CGRect)_frameForPageView;
+-(id)displayItem;
+-(void)insertEnhancedSwitcherView:(UIView *)view;
+@end
+
+@interface EnhancedSwitcherCloseViewController : NSObject
 @property (nonatomic, retain) UIView *createdView;
 @property (nonatomic, assign) Direction currentDirection;
 @property (nonatomic, assign) BOOL _shouldPerformAction;
 @property (nonatomic, assign) Action _firstAction;
 @property (nonatomic, assign) Action _secondAction;
 @property (nonatomic, assign) Action _thirdAction;
-@property(readonly, retain, nonatomic) SBDisplayItem *displayItem;
--(void)_handlePageViewTap:(id)arg1;
--(CGRect)_frameForScrollView;
--(CGRect)_frameForPageView;
--(void)addLabelWithTitle:(NSString *)arg1 withY:(CGFloat)arg2 withColor:(UIColor *)arg3;
--(void)createLabels;
--(void)removeLabels;
+@property (assign, nonatomic) id<EnhancedSwitcherCloseViewControllerDelegate> delegate;
+-(id)initWithDelegate:(id<EnhancedSwitcherCloseViewControllerDelegate>)arg1;
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3;
 -(BOOL)shouldPerformAction;
+-(void)allowActionPerform;
 -(Action)firstAction;
 -(Action)secondAction;
 -(Action)thirdAction;
--(void)updateActionswithIsSpringBoard:(BOOL)isSpringBoard;
 @end
 
-@interface SBDeckSwitcherPageView
+@interface SBDeckSwitcherItemContainer : UIView <EnhancedSwitcherCloseViewControllerDelegate> // iOS 9 - 10
+@property (nonatomic, retain) EnhancedSwitcherCloseViewController *enhancedController;
+@property(readonly, retain, nonatomic) SBDisplayItem *displayItem;
+-(void)_handlePageViewTap:(id)arg1;
+-(CGRect)_frameForPageView;
+-(void)insertEnhancedSwitcherView:(UIView *)view;
+@end
+
+@interface SBFluidSwitcherItemContainer : UIView <EnhancedSwitcherCloseViewControllerDelegate> // iOS 11+
+@property (nonatomic, retain) EnhancedSwitcherCloseViewController *enhancedController;
+@property (nonatomic, retain) SBAppLayout *appLayout;
+@property (nonatomic, weak, readonly) id<SBFluidSwitcherItemContainerDelegate> delegate;
+@property (assign, nonatomic) CGFloat contentPageViewScale;
+// -(void)_handlePageViewTap:(id)arg1; // can use selectedAppLayoutOfContainer: (for app tap) or switcherContentController:selectedAppLayout: (for switcher dismiss)
+-(CGRect)_frameForPageView;
+-(id)displayItem;
+-(void)insertEnhancedSwitcherView:(UIView *)view;
+@end
+
+@interface SBDeckSwitcherPageView // iOS 9 - 10
+@end
+
+@interface SBFluidSwitcherItemContainerHeaderView // iOS 11+
 @end
 
 @interface UIApplication (EnhancedSwitcherClose)
@@ -264,17 +334,16 @@ static void preferencesChanged() {
 -(BOOL)isPlaying;
 @end
 
-%hook SBDeckSwitcherItemContainer
-%property (nonatomic, retain) UIView *createdView;
-%property (nonatomic, assign) NSInteger currentDirection;
-%property (nonatomic, assign) BOOL _shouldPerformAction;
-%property (nonatomic, assign) NSInteger _firstAction;
-%property (nonatomic, assign) NSInteger _secondAction;
-%property (nonatomic, assign) NSInteger _thirdAction;
+@interface UIView (EnhancedSwitcherClose)
+-(CGSize)size;
+@end
 
--(id)initWithFrame:(CGRect)arg1 displayItem:(id)arg2 delegate:(id)arg3 {
-	self = %orig(arg1, arg2, arg3);
+@implementation EnhancedSwitcherCloseViewController
+-(id)initWithDelegate:(id<EnhancedSwitcherCloseViewControllerDelegate>)arg1 {
+	self = [super init];
 	if (self != nil) {
+		self.delegate = arg1;
+
 		[self removeLabels];
 		self.createdView = nil;
 		self.currentDirection = kNone;
@@ -286,96 +355,8 @@ static void preferencesChanged() {
 	return self;
 }
 
-%new
--(Action)firstAction {
-	return self._firstAction;
-}
-
-%new
--(Action)secondAction {
-	return self._secondAction;
-}
-
-%new
--(Action)thirdAction {
-	return self._thirdAction;
-}
-
-%new
--(void)updateActionswithIsSpringBoard:(BOOL)isSpringBoard {
-	BOOL isOverrideEnabled = NO;
-
-	NSString *prefix = @"";
-	NSString *itemIdentifier = @"";
-	if (isSpringBoard) {
-		prefix = @"Home";
-		itemIdentifier = @"";
-	} else {
-		isOverrideEnabled = boolValuePerApp([self displayItem].displayIdentifier, kOverridePerApp, NO);
-		prefix = @"App";
-		itemIdentifier = [NSString stringWithFormat:@"-%@", [self displayItem].displayIdentifier];
-	}
-
-	NSString *suffix = @"";
-	Action defaultFirstAction = kActionNone;
-	Action defaultSecondAction = kActionNone;
-	Action defaultThirdAction = kActionNone;
-	if (self.currentDirection == kUp) {
-		suffix = @"Up";
-		if (isSpringBoard) {
-			defaultFirstAction = kRelaunchAll;
-			defaultSecondAction = kKillAll;
-			defaultThirdAction = kRespring;
-		} else {
-			if (isOverrideEnabled) {
-				defaultFirstAction = kRelaunch;
-				defaultSecondAction = kClose;
-			} else {
-				defaultFirstAction = defaultAppFirstActionUp;
-				defaultSecondAction = defaultAppSecondActionUp;
-				defaultThirdAction = defaultAppThirdActionUp;
-			}
-		}
-	} else if (self.currentDirection == kDown) {
-		suffix = @"Down";
-		if (isSpringBoard) {
-			defaultFirstAction = kLaunch;
-			defaultSecondAction = kDismissSwitcher;
-		} else {
-			if (isOverrideEnabled) {
-				defaultFirstAction = kLaunch;
-				defaultSecondAction = kDismissSwitcher;
-			} else {
-				defaultFirstAction = defaultAppFirstActionDown;
-				defaultSecondAction = defaultAppSecondActionDown;
-				defaultThirdAction = defaultAppThirdActionDown;
-			}
-		}
-	}
-
-	if (isSpringBoard || isOverrideEnabled) {
-		self._firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
-		self._secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
-		self._thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
-	} else {
-		self._firstAction = defaultFirstAction;
-		self._secondAction = defaultSecondAction;
-		self._thirdAction = defaultThirdAction;
-	}
-}
-
-%new
--(BOOL)shouldPerformAction {
-	if (self._shouldPerformAction) {
-		self._shouldPerformAction = NO;
-		return YES;
-	}
-	return NO;
-}
-
-%new
 -(void)addLabelWithTitle:(NSString *)arg1 withY:(CGFloat)arg2 withColor:(UIColor *)arg3 {
-	CGRect pageViewFrame = [self _frameForPageView];
+	CGRect pageViewFrame = [self.delegate _frameForPageView];
 
 	UIView *leftSeparator = [[UIView alloc] initWithFrame:CGRectMake(8, arg2, pageViewFrame.size.width / 3 - 8, 2)];
 	leftSeparator.backgroundColor = arg3;
@@ -426,7 +407,6 @@ static void preferencesChanged() {
 	rightSeparator.frame = rightSeparatorFrame;
 }
 
-%new
 -(void)createLabels {
 	NSString *respringColor = stringValueForKey(@"respringColor", @"#FF0000");
 	NSString *killAllColor = stringValueForKey(@"killAllColor", @"#FF8800");
@@ -451,8 +431,7 @@ static void preferencesChanged() {
 		(UIColor *)LCPParseColorString(safemodeColor, @"#FFFF00")
 	};
 
-	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
-	CGRect pageViewFrame = [self _frameForPageView];
+	CGRect pageViewFrame = [self.delegate _frameForPageView];
 
 	if (self.createdView == nil) {
 		NSString *backgroundColor = stringValueForKey(@"backgroundColor", @"#000000");
@@ -495,10 +474,9 @@ static void preferencesChanged() {
 		[self addLabelWithTitle:@"No Actions Enabled" withY:(pageViewFrame.size.height / 2) withColor:[UIColor redColor]];
 	}
 
-	[self insertSubview:self.createdView belowSubview:_verticalScrollView];
+	[self.delegate insertEnhancedSwitcherView:self.createdView];
 }
 
-%new
 -(void)removeLabels {
 	if (self.createdView != nil) {
 		NSArray *subViews = [self.createdView subviews];
@@ -512,7 +490,6 @@ static void preferencesChanged() {
 	}
 }
 
-%new
 -(void)scrollViewProgressUpdated:(CGFloat)arg1 withDirection:(Direction)arg2 withIsSpringBoard:(BOOL)arg3 {
 	if (self.createdView != nil) {
 		CGFloat alpha = fabs(arg1) * 3;
@@ -535,15 +512,154 @@ static void preferencesChanged() {
 	}
 }
 
--(void)scrollViewWillEndDragging:(id)arg1 withVelocity:(CGPoint)arg2 targetContentOffset:(id)arg3 {
+-(BOOL)shouldPerformAction {
+	if (self._shouldPerformAction) {
+		self._shouldPerformAction = NO;
+		return YES;
+	}
+	return NO;
+}
+
+-(void)allowActionPerform {
 	self._shouldPerformAction = YES;
+}
+
+-(Action)firstAction {
+	return self._firstAction;
+}
+
+-(Action)secondAction {
+	return self._secondAction;
+}
+
+-(Action)thirdAction {
+	return self._thirdAction;
+}
+
+-(void)updateActionswithIsSpringBoard:(BOOL)isSpringBoard {
+	BOOL isOverrideEnabled = NO;
+
+	NSString *prefix = @"";
+	NSString *itemIdentifier = @"";
+	if (isSpringBoard) {
+		prefix = @"Home";
+		itemIdentifier = @"";
+	} else {
+		SBDisplayItem *displayItem = [self.delegate displayItem];
+		isOverrideEnabled = boolValuePerApp(displayItem.displayIdentifier, kOverridePerApp, NO);
+		prefix = @"App";
+		itemIdentifier = [NSString stringWithFormat:@"-%@", displayItem.displayIdentifier];
+	}
+
+	NSString *suffix = @"";
+	Action defaultFirstAction = kActionNone;
+	Action defaultSecondAction = kActionNone;
+	Action defaultThirdAction = kActionNone;
+	if (self.currentDirection == kUp) {
+		suffix = @"Up";
+		if (isSpringBoard) {
+			defaultFirstAction = kRelaunchAll;
+			defaultSecondAction = kKillAll;
+			defaultThirdAction = kRespring;
+		} else {
+			if (isOverrideEnabled) {
+				defaultFirstAction = kRelaunch;
+				defaultSecondAction = kClose;
+			} else {
+				defaultFirstAction = defaultAppFirstActionUp;
+				defaultSecondAction = defaultAppSecondActionUp;
+				defaultThirdAction = defaultAppThirdActionUp;
+			}
+		}
+	} else if (self.currentDirection == kDown) {
+		suffix = @"Down";
+		if (isSpringBoard) {
+			defaultFirstAction = kLaunch;
+			defaultSecondAction = kDismissSwitcher;
+		} else {
+			if (isOverrideEnabled) {
+				defaultFirstAction = kLaunch;
+				defaultSecondAction = kDismissSwitcher;
+			} else {
+				defaultFirstAction = defaultAppFirstActionDown;
+				defaultSecondAction = defaultAppSecondActionDown;
+				defaultThirdAction = defaultAppThirdActionDown;
+			}
+		}
+	}
+
+	if (isSpringBoard || isOverrideEnabled) {
+		self._firstAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kFirstAction, suffix], defaultFirstAction);
+		self._secondAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kSecondAction, suffix], defaultSecondAction);
+		self._thirdAction = (Action)intValuePerApp(itemIdentifier, [NSString stringWithFormat:@"%@%@%@", prefix, kThirdAction, suffix], defaultThirdAction);
+	} else {
+		self._firstAction = defaultFirstAction;
+		self._secondAction = defaultSecondAction;
+		self._thirdAction = defaultThirdAction;
+	}
+}
+
+-(void)dealloc {
+	[self removeLabels];
+
+	[super dealloc];
+}
+@end
+
+static void respring() {
+	[[%c(FBSystemService) sharedInstance] exitAndRelaunch:YES];
+}
+
+static void launchApplications(NSMutableArray *itemsToRun, BOOL areIdentifiers) {
+	if (areIdentifiers) {
+		for (NSString *iden in itemsToRun) { // launch applications
+			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:iden suspended:NO];
+		}
+	} else {
+		for (SBDisplayItem *item in itemsToRun) { // launch applications
+			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:item.displayIdentifier suspended:NO];
+		}
+	}
+}
+
+static void quickLaunch() {
+	NSMutableArray *items = prefixApps(@"QuickLaunch-");
+	if ([items count] > 0)
+		launchApplications(items, YES);
+	[items release];
+}
+
+%group iOS9And10
+%hook SBDeckSwitcherItemContainer
+%property (nonatomic, retain) EnhancedSwitcherCloseViewController *enhancedController;
+
+-(id)initWithFrame:(CGRect)arg1 displayItem:(id)arg2 delegate:(id)arg3 {
+	self = %orig(arg1, arg2, arg3);
+	if (self != nil)
+		self.enhancedController = [[EnhancedSwitcherCloseViewController alloc] initWithDelegate:self];
+	return self;
+}
+
+%new
+-(void)insertEnhancedSwitcherView:(UIView *)view {
+	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
+	[self insertSubview:view belowSubview:_verticalScrollView];
+}
+
+-(void)scrollViewWillEndDragging:(id)arg1 withVelocity:(CGPoint)arg2 targetContentOffset:(id)arg3 {
+	[self.enhancedController allowActionPerform];
 	%orig(arg1, arg2, arg3);
+}
+
+-(void)dealloc {
+	[self.enhancedController release];
+	self.enhancedController = nil;
+
+	%orig();
 }
 %end
 
 %hook SBDeckSwitcherViewController
-UIAlertController *alert = nil;
-
 -(void)viewWillDisappear:(BOOL)arg1 {
 	%orig(arg1);
 	
@@ -551,11 +667,6 @@ UIAlertController *alert = nil;
 		[alert dismissViewControllerAnimated:YES completion:nil];
 		alert = nil;
 	}
-}
-
-%new
--(void)respring {
-	[[%c(FBSystemService) sharedInstance] exitAndRelaunch:YES];
 }
 
 %new
@@ -615,7 +726,7 @@ UIAlertController *alert = nil;
 	NSMutableArray *items = [[NSMutableArray alloc] initWithArray:[self displayItems]];
 	if ([items count] > 1) {
 		[self closeAllApplications:NO];
-		[self launchApplications:items withIdentifiers:NO];
+		launchApplications(items, NO);
 	}
 	[items release];
 }
@@ -645,21 +756,12 @@ UIAlertController *alert = nil;
 }
 
 %new
--(void)quickLaunch {
-	NSMutableArray *items = prefixApps(@"QuickLaunch-");
-	if ([items count] > 0) {
-		[self launchApplications:items withIdentifiers:YES];
-	}
-	[items release];
-}
-
-%new
 -(void)performAction:(Action)action withContainer:(SBDeckSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item {
 	switch (action) {
 		case kActionNone:
 			return;
 		case kRespring:
-			[self respring];
+			respring();
 			return;
 		case kKillAll:
 			[self killAll];
@@ -680,7 +782,7 @@ UIAlertController *alert = nil;
 			[self relaunchApp:container withDisplayItem:item];
 			return;
 		case kQuickLaunch:
-			[self quickLaunch];
+			quickLaunch();
 			return;
 		case kSafemode:
 			[self RIPCrashReporter];
@@ -695,7 +797,8 @@ UIAlertController *alert = nil;
 	if (isSpringBoard && !isHomeEnabled) {
 		return;
 	}
-	Action currentActions[3] = {[container firstAction], [container secondAction], [container thirdAction]};
+	EnhancedSwitcherCloseViewController *enhancedController = container.enhancedController;
+	Action currentActions[3] = {[enhancedController firstAction], [enhancedController secondAction], [enhancedController thirdAction]};
 	while (index >= 0) {
 		if (currentActions[index] != kActionNone) {
 			break;
@@ -734,9 +837,11 @@ UIAlertController *alert = nil;
 			}
 		}
 
+		EnhancedSwitcherCloseViewController *enhancedController = arg2.enhancedController;
+
 		if (arg1 > 0.0) {
-			[arg2 scrollViewProgressUpdated:arg1 withDirection:kUp withIsSpringBoard:isSpringBoard];
-			if ([arg2 shouldPerformAction]) {
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kUp withIsSpringBoard:isSpringBoard];
+			if ([enhancedController shouldPerformAction]) {
 				if (arg1 > kThirdActionUpOffset) {
 					[self performActionWithActionIndex:2 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
 				} else if (arg1 > kSecondActionUpOffset) {
@@ -744,11 +849,11 @@ UIAlertController *alert = nil;
 				} else if (arg1 > kFirstActionUpOffset) {
 					[self performActionWithActionIndex:0 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
 				}
-				[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+				[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
 			}
 		} else if (arg1 < 0.0) {
-			[arg2 scrollViewProgressUpdated:arg1 withDirection:kDown withIsSpringBoard:isSpringBoard];
-			if ([arg2 shouldPerformAction]) {
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kDown withIsSpringBoard:isSpringBoard];
+			if ([enhancedController shouldPerformAction]) {
 				if (arg1 < kThirdActionDownOffset) {
 					[self performActionWithActionIndex:2 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
 				} else if (arg1 < kSecondActionDownOffset) {
@@ -756,10 +861,10 @@ UIAlertController *alert = nil;
 				} else if (arg1 < kFirstActionDownOffset) {
 					[self performActionWithActionIndex:0 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
 				}
-				[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+				[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
 			}
 		} else {
-			[arg2 scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
 		}
 	}
 
@@ -808,19 +913,371 @@ UIAlertController *alert = nil;
 	isClosingAll = NO;
 	[items release];
 }
+%end
+%end
 
-%new
--(void)launchApplications:(NSMutableArray *)itemsToRun withIdentifiers:(BOOL)areIdentifiers {
-	if (areIdentifiers) {
-		for (NSString *iden in itemsToRun) { // launch applications
-			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:iden suspended:NO];
+%group iOS11Plus
+%hook SBFluidSwitcherItemContainer
+%property (nonatomic, retain) EnhancedSwitcherCloseViewController *enhancedController;
+
+-(id)initWithFrame:(CGRect)arg1 appLayout:(id)arg2 delegate:(id)arg3 active:(BOOL)arg4 {
+	self = %orig(arg1, arg2, arg3, arg4);
+	if (self != nil)
+		self.enhancedController = [[EnhancedSwitcherCloseViewController alloc] initWithDelegate:self];
+	return self;
+}
+
+-(void)_updateScrollEnabled {
+	%orig(); // don't disable scrolling completely
+
+	if (isTweakEnabled) {
+		SBDisplayItem *selected = [self.appLayout allItems][0];
+		BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
+
+		if (isSpringBoard && (!isHomeEnabled || (!isHomeSwipeUpEnabled && !isHomeSwipeDownEnabled)))
+			return; // don't re-enable scroll if home is not enabled
+
+		BOOL isAppEnabled = isDefaultAppEnabled;
+		BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+		BOOL isAppSwipeDownEnabled = isDefaultAppSwipeDownEnabled;
+		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+			isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+			isAppSwipeDownEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeDownEnabled-", YES);
 		}
-	} else {
-		for (SBDisplayItem *item in itemsToRun) { // launch applications
-			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:item.displayIdentifier suspended:NO];
+
+		if (!isAppEnabled || (!isAppSwipeUpEnabled && !isAppSwipeDownEnabled))
+			return; // don't re-enable scroll if app is not enabled
+
+		// fix vertical scroll being completely disabled
+		if (![self.delegate isAppLayoutOfContainerRemovable:self]) {
+			UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
+			SBAppSwitcherSettings *_settings = MSHookIvar<SBAppSwitcherSettings *>(self, "_settings");
+			BOOL killingEnabled = [_settings effectiveKillAffordanceStyle] - 2 < 3;
+			[_verticalScrollView setScrollEnabled:killingEnabled];
 		}
 	}
 }
+
+-(void)layoutSubviews {
+	BOOL previousIsUpdatingScrollContentSize = isUpdatingScrollContentSize;
+	if (isTweakEnabled)
+		isUpdatingScrollContentSize = YES;
+
+	%orig(); // need to let it calculate _verticalScrollView's contentSize correctly
+
+	isUpdatingScrollContentSize = previousIsUpdatingScrollContentSize;
+}
+
+%new
+-(void)insertEnhancedSwitcherView:(UIView *)view {
+	UIScrollView *_verticalScrollView = MSHookIvar<UIScrollView *>(self, "_verticalScrollView");
+	[self insertSubview:view belowSubview:_verticalScrollView];
+}
+
+%new
+-(id)displayItem {
+	return [self.appLayout allItems][0];
+}
+
+-(void)scrollViewWillEndDragging:(id)arg1 withVelocity:(CGPoint)arg2 targetContentOffset:(id)arg3 {
+	[self.enhancedController allowActionPerform];
+	%orig(arg1, arg2, arg3);
+}
+
+-(void)dealloc {
+	[self.enhancedController release];
+	self.enhancedController = nil;
+
+	%orig();
+}
+%end
+
+%hook SBFluidSwitcherViewController
+-(void)viewWillDisappear:(BOOL)arg1 {
+	%orig(arg1);
+	
+	if (alert) {
+		[alert dismissViewControllerAnimated:YES completion:nil];
+		alert = nil;
+	}
+}
+
+%new
+-(void)killAll {
+	[self closeAllApplications:YES];
+	if (isAutoDismissOnKillEnabled) {
+		[self dismissSwitcher]; // not really required since default switcher does this already
+	}
+}
+
+%new
+-(void)killApp:(SBFluidSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item {
+	NSString *nowPlayingBundleIdentifier = [[[%c(SBMediaController) sharedInstance] nowPlayingApplication] bundleIdentifier];
+	if ([item.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
+		if (isAlertNowPlayingEnabled) {
+			// should probably avoid UIAlertControllers in SpringBoard but oh well.
+			if (alert) {
+				[alert dismissViewControllerAnimated:YES completion:nil];
+				alert = nil;
+			}
+
+			SBFluidSwitcherItemContainerHeaderView *_iconAndLabelHeader = MSHookIvar<SBFluidSwitcherItemContainerHeaderView *>(container, "_iconAndLabelHeader");
+			NSString *appName = (MSHookIvar<UILabel *>(_iconAndLabelHeader, "_firstIconTitle")).text;
+			NSString *displayMessage = [NSString stringWithFormat:@"%@ is currently now playing app. Are you sure you'd like to close it?", appName];
+			alert = [UIAlertController alertControllerWithTitle:@"EnhancedSwitcherClose" message:displayMessage preferredStyle:UIAlertControllerStyleAlert];
+
+			UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes, Close" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+				[self killAppLayoutOfContainer:container withVelocity:1.0 forReason:1];
+				NSArray *items = [self appLayouts];
+				if ([items count] == 1 && isAutoCloseSwitcherEnabled) {
+					[self dismissSwitcher];
+				}
+				alert = nil;
+			}];
+			UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No, Keep" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
+				alert = nil;
+			}];
+
+			[alert addAction:yesAction];
+			[alert addAction:cancelAction];
+
+			[self presentViewController:alert animated:YES completion:nil];
+
+			return;
+		} else if (isNowPlayingEnabled) {
+			return;
+		}
+	}
+	[self killAppLayoutOfContainer:container withVelocity:1.0 forReason:1];
+	NSArray *items = [self appLayouts];
+	if ([items count] == 1 && isAutoCloseSwitcherEnabled) {
+		[self dismissSwitcher];
+	}
+}
+
+%new
+-(void)relaunchAll {
+	NSMutableArray *items = [[NSMutableArray alloc] init];
+	NSMutableArray *appLayouts = [[NSMutableArray alloc] initWithArray:[self appLayouts]];
+	[appLayouts removeObject:[%c(SBAppLayout) homeScreenAppLayout]]; // remove springboard if exist
+	for (SBAppLayout *item in appLayouts)
+		[items addObject:[item allItems][0]];
+	if ([items count] > 0) {
+		[self closeAllApplications:NO];
+		launchApplications(items, NO);
+	}
+	[appLayouts release];
+	[items release];
+}
+
+%new
+-(void)relaunchApp:(SBFluidSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item {
+	NSString *nowPlayingBundleIdentifier = [[[%c(SBMediaController) sharedInstance] nowPlayingApplication] bundleIdentifier];
+	if (isNowPlayingEnabled && [item.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
+		return;
+	}
+	[self killAppLayoutOfContainer:container withVelocity:1.0 forReason:1];
+	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:item.displayIdentifier suspended:NO];
+}
+
+%new
+-(void)dismissSwitcher {
+	[self.delegate switcherContentController:self selectedAppLayout:[self.dataSource returnToAppLayout]];
+}
+
+%new
+-(void)launchApp:(SBFluidSwitcherItemContainer *)container {
+	[self selectedAppLayoutOfContainer:container];
+}
+
+%new
+-(void)performAction:(Action)action withContainer:(SBFluidSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item {
+	switch (action) {
+		case kActionNone:
+			return;
+		case kRespring:
+			respring();
+			return;
+		case kKillAll:
+			[self killAll];
+			return;
+		case kRelaunchAll:
+			[self relaunchAll];
+			return;
+		case kLaunch:
+			[self launchApp:container];
+			return;
+		case kDismissSwitcher:
+			[self dismissSwitcher];
+			return;
+		case kClose:
+			[self killApp:container withDisplayItem:item];
+			return;
+		case kRelaunch:
+			[self relaunchApp:container withDisplayItem:item];
+			return;
+		case kQuickLaunch:
+			quickLaunch();
+			return;
+		case kSafemode:
+			[self RIPCrashReporter];
+			return;
+		default:
+			return;
+	}
+}
+
+%new
+-(void)performActionWithActionIndex:(NSInteger)index withContainer:(SBFluidSwitcherItemContainer *)container withDisplayItem:(SBDisplayItem *)item withIsSpringBoard:(BOOL)isSpringBoard {
+	if (isSpringBoard && !isHomeEnabled) {
+		return;
+	}
+	EnhancedSwitcherCloseViewController *enhancedController = container.enhancedController;
+	Action currentActions[3] = {[enhancedController firstAction], [enhancedController secondAction], [enhancedController thirdAction]};
+	while (index >= 0) {
+		if (currentActions[index] != kActionNone) {
+			break;
+		}
+		index--;
+	}
+	if (index < 0) {
+		return;
+	}
+	[self performAction:currentActions[index] withContainer:container withDisplayItem:item];
+}
+
+-(void)scrollViewKillingProgressUpdated:(CGFloat)arg1 ofContainer:(SBFluidSwitcherItemContainer *)arg2 {
+	if (isTweakEnabled && !isClosingAll) {
+		SBDisplayItem *selected = [arg2.appLayout allItems][0];
+		BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
+
+		if (isSpringBoard) {
+			if (!isHomeEnabled || (arg1 > 0.0 && !isHomeSwipeUpEnabled) || (arg1 < 0.0 && !isHomeSwipeDownEnabled)) {
+				%orig(arg1, arg2);
+				return;
+			}
+		} else {
+			BOOL isAppEnabled = isDefaultAppEnabled;
+			BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+			BOOL isAppSwipeDownEnabled = isDefaultAppSwipeDownEnabled;
+			if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+				isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+				isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+				isAppSwipeDownEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeDownEnabled-", YES);
+			}
+
+			if (!isAppEnabled || (arg1 > 0.0 && !isAppSwipeUpEnabled) || (arg1 < 0.0 && !isAppSwipeDownEnabled)) {
+				%orig(arg1, arg2);
+				return;
+			}
+		}
+
+		EnhancedSwitcherCloseViewController *enhancedController = arg2.enhancedController;
+
+		if (arg1 > 0.0) {
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kUp withIsSpringBoard:isSpringBoard];
+			if ([enhancedController shouldPerformAction]) {
+				if (arg1 > kThirdActionUpOffset) {
+					[self performActionWithActionIndex:2 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				} else if (arg1 > kSecondActionUpOffset) {
+					[self performActionWithActionIndex:1 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				} else if (arg1 > kFirstActionUpOffset) {
+					[self performActionWithActionIndex:0 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				}
+				[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+			}
+		} else if (arg1 < 0.0) {
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kDown withIsSpringBoard:isSpringBoard];
+			if ([enhancedController shouldPerformAction]) {
+				if (arg1 < kThirdActionDownOffset) {
+					[self performActionWithActionIndex:2 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				} else if (arg1 < kSecondActionDownOffset) {
+					[self performActionWithActionIndex:1 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				} else if (arg1 < kFirstActionDownOffset) {
+					[self performActionWithActionIndex:0 withContainer:arg2 withDisplayItem:selected withIsSpringBoard:isSpringBoard];
+				}
+				[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+			}
+		} else {
+			[enhancedController scrollViewProgressUpdated:arg1 withDirection:kNone withIsSpringBoard:isSpringBoard];
+		}
+	}
+
+	%orig(arg1, arg2);
+}
+
+-(BOOL)isAppLayoutOfContainerRemovable:(SBFluidSwitcherItemContainer *)arg1 {
+	if (isUpdatingScrollContentSize)
+		return %orig(arg1);
+
+	SBDisplayItem *selected = [arg1.appLayout allItems][0];
+	BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
+
+	if (isSpringBoard || !isTweakEnabled) {
+		return %orig(arg1);
+	} else {
+		BOOL isAppEnabled = isDefaultAppEnabled;
+		BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+			isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+		}
+
+		if (isAppEnabled && isAppSwipeUpEnabled) {
+			return NO;
+		}
+	}
+	return %orig(arg1);
+}
+
+-(CGFloat)minimumVerticalTranslationForKillingOfContainer:(SBFluidSwitcherItemContainer *)arg1 {
+	if (!isUpdatingScrollContentSize)
+		return %orig(arg1);
+
+	SBDisplayItem *selected = [arg1.appLayout allItems][0];
+	BOOL isSpringBoard = [selected.displayIdentifier isEqualToString:@"com.apple.springboard"];
+
+	if (isSpringBoard || !isTweakEnabled) {
+		return %orig(arg1);
+	} else {
+		BOOL isAppEnabled = isDefaultAppEnabled;
+		BOOL isAppSwipeUpEnabled = isDefaultAppSwipeUpEnabled;
+		if (boolValuePerApp(selected.displayIdentifier, kOverridePerApp, NO)) {
+			isAppEnabled = boolValuePerApp(selected.displayIdentifier, kPerApp, YES);
+			isAppSwipeUpEnabled = boolValuePerApp(selected.displayIdentifier, @"isAppSwipeUpEnabled-", YES);
+		}
+
+		if (isAppEnabled && isAppSwipeUpEnabled) {
+			return -[arg1 _frameForPageView].size.height;
+		}
+	}
+	return %orig(arg1);
+}
+
+%new
+-(void)closeAllApplications:(BOOL)includeWhitelist  {
+	isClosingAll = YES;
+	NSString *nowPlayingBundleIdentifier = [[[%c(SBMediaController) sharedInstance] nowPlayingApplication] bundleIdentifier];
+	NSMutableArray *items = [[NSMutableArray alloc] initWithArray:[self appLayouts]];
+	[items removeObject:[%c(SBAppLayout) homeScreenAppLayout]]; // remove springboard if exist
+	for(SBAppLayout *item in items) { // close applications
+		SBDisplayItem *displayItem = [item allItems][0];
+		if (includeWhitelist) {
+			if (!isWhitelistEnabled || !boolValuePerApp(displayItem.displayIdentifier, @"PerAppKill-", NO)) {
+				if (isNowPlayingOnKillEnabled && [displayItem.displayIdentifier isEqualToString:nowPlayingBundleIdentifier] && [[%c(SBMediaController) sharedInstance] isPlaying]) {
+					continue;
+				}
+				[self killAppLayoutOfContainer:[self _itemContainerForAppLayoutIfExists:item] withVelocity:1.0 forReason:1];
+			}
+		} else {
+			[self killAppLayoutOfContainer:[self _itemContainerForAppLayoutIfExists:item] withVelocity:1.0 forReason:1];
+		}
+	}
+	isClosingAll = NO;
+	[items release];
+}
+%end
 %end
 
 %dtor {
@@ -835,4 +1292,9 @@ UIAlertController *alert = nil;
 %ctor {
 	preferencesChanged();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)preferencesChanged, CFSTR("com.dgh0st.enhancedswitcherclose/settingschanged"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+
+	if (%c(SBFluidSwitcherViewController))
+		%init(iOS11Plus);
+	else if (%c(SBDeckSwitcherViewController))
+		%init(iOS9And10);
 }
