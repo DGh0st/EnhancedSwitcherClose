@@ -1249,7 +1249,7 @@ static void quickLaunch() {
 		}
 
 		if (isAppEnabled && isAppSwipeUpEnabled) {
-			return -[arg1 _frameForPageView].size.height;
+			return -[arg1 _frameForPageView].size.height * arg1.contentPageViewScale;
 		}
 	}
 	return %orig(arg1);
