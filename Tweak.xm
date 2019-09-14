@@ -25,6 +25,8 @@
 #define kPerApp @"isAppEnabled-"
 #define kOverridePerApp @"isOverrideEnabled-"
 
+#define kDefaultSwitcherCardScale 0.75
+
 typedef NS_ENUM(NSInteger, Direction) {
 	kUp = 0,
 	kDown,
@@ -246,6 +248,7 @@ static void preferencesChanged() {
 @property (nonatomic, readonly) NSArray *appLayouts;
 @property (assign, nonatomic, weak) id<SBMainAppSwitcherContentViewControllerDelegate> delegate;
 @property (assign, nonatomic, weak) id<SBMainAppSwitcherContentViewControllerDataSource> dataSource;
+-(CGFloat)switcherCardScale;
 -(void)killAppLayoutOfContainer:(id)arg1 withVelocity:(CGFloat)arg2 forReason:(NSInteger)arg3;
 -(void)selectedAppLayoutOfContainer:(id)arg1;
 -(id)_itemContainerForAppLayoutIfExists:(id)arg1;
@@ -297,7 +300,6 @@ static void preferencesChanged() {
 @property (nonatomic, retain) EnhancedSwitcherCloseViewController *enhancedController;
 @property (nonatomic, retain) SBAppLayout *appLayout;
 @property (nonatomic, weak, readonly) id<SBFluidSwitcherItemContainerDelegate> delegate;
-@property (assign, nonatomic) CGFloat contentPageViewScale;
 // -(void)_handlePageViewTap:(id)arg1; // can use selectedAppLayoutOfContainer: (for app tap) or switcherContentController:selectedAppLayout: (for switcher dismiss)
 -(CGRect)_frameForPageView;
 -(id)displayItem;
@@ -1249,7 +1251,7 @@ static void quickLaunch() {
 		}
 
 		if (isAppEnabled && isAppSwipeUpEnabled) {
-			return -[arg1 _frameForPageView].size.height * arg1.contentPageViewScale;
+			return -[arg1 _frameForPageView].size.height * [self switcherCardScale] / kDefaultSwitcherCardScale;
 		}
 	}
 	return %orig(arg1);
